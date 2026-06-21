@@ -1,0 +1,12 @@
+Game Name: Gateway Incremental
+Game Type: Incremental / Clicker / Idle
+
+General: This folder exists to assist with the planning of the game. It should contain files for each major concept of the game and how they should be approached.
+
+Gameplay Loop: The user has multiple options to spend time clicking and waiting for an action to complete. These results provide more power or speed for future actions which continuously compound and eventually unlock new actions.
+Example: User prays for attribute strength. A 10 second timer starts. At the end of the time, the user gains 1 strength and can begin praying again.
+
+Considerations that need to be addressed:
+- Game is played locally. Should any data be stored in an online mongoDB? Yes for cloud save purposes so the user does not need to save data locally.
+- Game is played locally. Is there anything we can do to prevent cheating the system or editting data so that the user progresses as expected and can not immediately win?
+- Can we maintain a layout that works for mobile as well as desktop?

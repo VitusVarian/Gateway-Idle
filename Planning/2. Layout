@@ -1,0 +1,15 @@
+The game layout should be maintained on all pages.
+The game should follow a single page app feel.
+The landing page should allow a user to login using a discord account or a gmail account.
+The landing page should be a single form for login and a top of the page banner for the game.
+After logging in, the page should consist of a header banner and a 2 pane layout with a smaller left pane for navigation and a larger right pane for the main game actions.
+The game should have a dark color scheme by default - dark greys and light teal accents. Main text can be white or very light grey. the font should be a generic sans serif for legitibility.
+
+Links in the left nav should include:
+- Home
+- Armory
+- Temple
+- Training Grounds
+- Tepke Mines
+
+Other links will appear in this list, but are not "unlocked" by default.
