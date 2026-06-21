@@ -1,4 +1,2 @@
 We want a technology stack that is up to date stable, follows best practices, meets our needs as an incremental game, and is compatible.
-Next JS, React, Typescript, and mongoDB are my preferences - Is there a better starting stack to consider? 
-Any additional technologies can be added to the stack as long as they add needed functioanlity, are compatible with everything already part of the stack, and do not cause performance issues.
-We will need discord login and gmail login capabilities
+Next JS, React, Typescript, are my preferences - Is there a better starting stack to consider? 
