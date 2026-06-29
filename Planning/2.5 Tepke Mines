@@ -1,0 +1,1 @@
+The mines are a place where the user can spend time "mining". This action should have a progress bar and at the end, the user should be awarded gold and sometimes a forging material. The more times the user has mined, the more gold should be awarded. There will be other scaling factors later to affect the time it takes to mine and the rewards given.

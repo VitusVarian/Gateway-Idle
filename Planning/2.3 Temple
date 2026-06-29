@@ -1,0 +1,3 @@
+Temple will allow a user to "pray" for certain stats. When the player is on the screen and has selected a stat, a timer will tick until adding a point to the chosen stat. The choices are strength, speed, vitality, endurance.
+At game start, it should take 1 minute per stat. There will be modifiers that make this faster later on (piety being one of them). More points of said stat should slow down the next point gain.
+When praying for a stat, display a progress bar with amount of time left until the point is achieved. Preserve this bar if the user leaves the screen and later returns.

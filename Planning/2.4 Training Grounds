@@ -1,0 +1,6 @@
+The training grounds is where a user can fight a monster. There should be a list of mosnters to choose from. The user cannot see all of the list until they beat a certain monster. After you beat mosnter 1, you can see 1 and 2. After beating 2, you can see 1, 2, and 3, etc.
+The battle will take place in the main part of the screen and will be a real time combat where the monster and the player will take actions based on a speed stat and deal/take damage based on their other stats and equipment.
+There should be a display of this combat. Artwork will be provided. 
+-- If a model thath as multiple animation states is provided, can it be animated properly to match attack speeds? 
+
+After a battle is concluded, the user is awarded experience points. If enough points are accumulated, a level up occurs. A new battle starts after a cooldown timer of 10 seconds. This timer will have modfiers that make it shorter or longer at a later time.
