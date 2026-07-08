@@ -1,9 +1,0 @@
-Armory will display the currently equipped items and allow a user to swap between equipped and unequipped.
-If a user tries to equip an item into a slot that is already occupied, swap the two items.
-There should also be an option to sell unequipped items back to the game for 50% of their purchase price in gold. No other materials will be refunded. There should be a confirmation window for selling.
-There should be a display of values from equipped items.
-Equipped items are limited to:
-- 1 weapon
-- 1 Body armor
-- 2 Rings 
-- 1 Amulet
