@@ -1,0 +1,124 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-face), ui-serif, Georgia, serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --shadow-rpg-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-rpg-md: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+:root {
+  color-scheme: dark;
+
+  --background: #0f1115;
+  --foreground: #e6eaf2;
+
+  --surface: #171a21;
+  --surface-foreground: #e6eaf2;
+
+  --card: #1e232d;
+  --card-foreground: #e6eaf2;
+
+  --popover: #1e232d;
+  --popover-foreground: #e6eaf2;
+
+  /* Gold — primary brand accent */
+  --primary: #c29b5a;
+  --primary-foreground: #14100a;
+
+  /* Steel blue — secondary accent */
+  --secondary: #4e7da6;
+  --secondary-foreground: #f4f7ff;
+
+  --muted: #232935;
+  --muted-foreground: #9ca6b8;
+
+  --accent: #4e7da6;
+  --accent-foreground: #f4f7ff;
+
+  --destructive: #c24a4a;
+  --destructive-foreground: #f4f7ff;
+
+  --success: #3fa66a;
+  --success-foreground: #06130c;
+
+  --warning: #d4a24a;
+  --warning-foreground: #1a1206;
+
+  --border: #2b303a;
+  --input: #2b303a;
+  --ring: #7fb3ff;
+
+  --radius: 10px;
+}
+
+/* Color-safe palette variant (toggled in Settings) */
+.palette-color-safe {
+  --primary: #d9b877;
+  --secondary: #6aa0d6;
+  --accent: #6aa0d6;
+  --success: #4ea6ff;
+  --warning: #e0b25a;
+  --destructive: #e08a3c;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'tnum' 1;
+  }
+  /* Visible focus ring using focus_ring token */
+  :where(a, button, input, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Reduced motion (toggled in Settings) */
+  .reduce-motion *,
+  .reduce-motion *::before,
+  .reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
