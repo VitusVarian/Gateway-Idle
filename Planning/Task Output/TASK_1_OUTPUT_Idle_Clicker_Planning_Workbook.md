@@ -402,46 +402,46 @@ Must-have platform priorities:
 Fill this after completing Sections 4-6.
 
 ### Product Summary
-- Game concept (1-2 sentences):
-- Target audience:
-- Platforms:
-- Core loop summary:
+- Game concept (1-2 sentences): A linear fantasy idle-RPG focused on active combat, mining, blacksmith upgrades, and a Path of Exile-style skill tree. Players fight monsters for XP, level up for skill points, mine gold for equipment upgrades, and use those systems to keep pushing into harder challenges.
+- Target audience: Late 20s to early 50s players, especially old-school RPG fans and Final Fantasy fans who want a serious, progression-driven browser game.
+- Platforms: Web browser.
+- Core loop summary: Fight a monster, earn XP, level up, gain skill points, mine gold, upgrade weapons and armor, and spend skill points in a branching skill tree to grow stronger.
 
 ### Systems Scope (Launch)
-- Economy systems included:
-- Progression systems included:
-- Prestige/reset model:
-- Retention systems included:
-- Monetization systems included:
+- Economy systems included: Gold from mining, XP from fighting, and skill points from leveling.
+- Progression systems included: Character leveling, equipment upgrades at the blacksmith, branching skill tree progression, and monster difficulty scaling.
+- Prestige/reset model: No prestige system at launch; progression is intentionally linear.
+- Retention systems included: Daily quest to level up or earn a gold target, reward-based time acceleration, and weekly update-driven content cadence.
+- Monetization systems included: Optional one-time donation or recurring subscription with no gameplay advantages or paid progression benefits.
 
 ### Technical Plan
-- Engine/framework:
-- Data architecture approach:
-- Save/load approach:
-- Analytics plan:
-- Anti-exploit plan:
+- Engine/framework: TypeScript, Next.js, MongoDB, Tailwind CSS, and shadcn/ui.
+- Data architecture approach: Store gameplay definitions and tunable values in database tables so combat, upgrades, monsters, and skill trees can be adjusted without hard-coding every rule.
+- Save/load approach: Account-based persistence using MongoDB as the source of truth, with local displays approximated from server-backed state.
+- Analytics plan: Standard analytics covering core progression, daily quest completion, and general feature usage.
+- Anti-exploit plan: Validate against time spoofing, local variable tampering, and malformed client data before writing progress to MongoDB.
 
 ### Balance Targets
-- Early game pacing target:
-- Mid-game pacing target:
-- Late-game pacing target:
-- Offline cap and multiplier policy:
-- Key tuning risks:
+- Early game pacing target: First level-up and first meaningful upgrade should happen quickly enough to make the player feel immediate momentum.
+- Mid-game pacing target: Maintain 15-30 minute active sessions centered on combat, mining, and build decisions.
+- Late-game pacing target: Extend progression through equipment scaling and skill-tree specialization rather than reset-based loops.
+- Offline cap and multiplier policy: Offline progression is capped at 36 hours; while offline, the game should continue the player’s last chosen action until they return and change tasks.
+- Key tuning risks: The current plan is highly linear, so pacing may stall if new unlocks and equipment upgrades do not arrive often enough; numeric balance around XP, gold, and blacksmith costs will need simulation.
 
 ### Production Plan
-- MVP features locked for implementation:
-- Team roles and ownership:
-- Milestone timeline:
-- Test/QA focus areas:
+- MVP features locked for implementation: Sign-up/login with Google, character creation, fighting page, blacksmith page, skill tree page, mining page, and daily quest support.
+- Team roles and ownership: Game dev owns implementation, tuning, and content operations.
+- Milestone timeline: Weekly update cadence.
+- Test/QA focus areas: Level-up flow, XP and gold formulas, blacksmith upgrade rules, skill-tree traversal, offline progress behavior, and database write integrity.
 
 ### Open Questions and Risks
-- Unknowns requiring prototype validation:
-- Assumptions that may fail:
-- Fallback options if scope/tuning slips:
+- Unknowns requiring prototype validation: Whether combat-only active play remains engaging without automation or prestige, whether the mining loop creates enough downtime value, and whether the Path of Exile-style skill tree is readable in a browser UI.
+- Assumptions that may fail: Players may expect automation, prestige, or more frequent short-session rewards from an idle game; the current linear structure may need more content breadth than expected.
+- Fallback options if scope/tuning slips: Add light automation, soft caps, or a meta progression layer later; simplify the first launch to fighting plus mining if the full feature set proves too large.
 
 ### Developer Handoff Checklist
-- [ ] Feature list is implementation-ready and prioritized.
-- [ ] Core formulas and balancing targets are documented.
-- [ ] UI flow and critical screens are identified.
-- [ ] Technical constraints and dependencies are listed.
-- [ ] Launch scope vs post-launch scope is explicit.
+- [x] Feature list is implementation-ready and prioritized.
+- [x] Core formulas and balancing targets are documented.
+- [x] UI flow and critical screens are identified.
+- [x] Technical constraints and dependencies are listed.
+- [x] Launch scope vs post-launch scope is explicit.
