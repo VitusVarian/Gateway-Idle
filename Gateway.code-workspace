@@ -1,9 +1,7 @@
 {
-	"folders": [
-		{
-			"name": "Gateway-Incremental",
-			"path": "."
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }
