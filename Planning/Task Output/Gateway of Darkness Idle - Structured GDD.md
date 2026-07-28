@@ -18,6 +18,7 @@
 ### Battle Flow
 - Combat runs until the current monster reaches 0 HP or below, or until the player chooses a different monster/stage.
 - After each monster battle, there is a 3-second cooldown before the next battle begins.
+- Manual stage changes bypass post-battle cooldown and start the new stage immediately.
 - Player attack animation and damage application occur every `AttackSpeedBase` seconds.
 - Stage navigation supports advancing and backtracking via arrows.
 - Advancing is locked until the stage-clear requirement is met.
@@ -27,7 +28,7 @@
 ### Character Stats / Progress Values
 - `Level` (default: 1)
   - Increases when `Experience >= ExperienceToLevel`.
-  - On level-up: increments `Strength` and `Endurance` (as written in source).
+  - On level-up: increments `Strength` (as written in source).
 - `Strength` (default: 1)
   - Gains `StrengthGrowth` per level.
   - 1 Strength = +1 BaseDamage.
@@ -62,7 +63,9 @@
   - Otherwise show warning: "Not enough souls!"
 
 ### Combat / Reward Formulas
-- `DamageDealt = FLOOR((BaseDamage * DamageMultiplier) / MonsterDifficultyModifier)`
+- `BaseDamage = Strength` (current implementation).
+- Future intent: `BaseDamage` may later become a sum of Strength plus additional modifiers.
+- `DamageDealt = FLOOR(BaseDamage * DamageMultiplier)`
 - `MonsterHitPoints = FLOOR(MonsterBaseHitPoints * (MonsterLevel * MonsterCoefficient + MonsterGrowthRate^MonsterLevel))`
 - `MonsterBaseHitPoints = 10`
 - `MonsterCoefficient = 2`
@@ -70,22 +73,29 @@
 - `ExperienceGain = FLOOR(10 * MonsterLevel * ExperienceModifier)`
 - `MonsterSoulGain = FLOOR(10 * MonsterLevel * MonsterSoulModifier)`
 - `AttackSpeedBase = 0.8`
-- `DPSvalue = FLOOR(DamageDealt * AttackSpeedBase)`
+- `DPSvalue = FLOOR(DamageDealt / AttackSpeedBase)`
 
 ### Stage Progression and Boss Gates
-- Must defeat 10 monsters at stage level `x` to unlock stage `x+1`.
+- Standard stages require 10 monster defeats at stage level `x` to unlock stage `x+1`.
 - Boss stages at levels 10, 100, and 1000 unlock prestige tiers.
 - Boss stage rules:
   - Single-monster mandatory fights.
+  - A boss clear replaces the standard 10-kill gate for that level.
   - Cannot skip, reduce, or increase boss stage difficulty.
   - Boss stats are double the previous level's stats (example given: level 10 boss = 2x level 9).
 - After each boss stage, normal monster scaling continues from the boss-adjusted stat level, preserving a step-up in difficulty.
+- Stage progression persistence:
+  - Stage progression persists across normal play and reloads.
+  - Stage progression resets to default when any prestige is used (Training, Rebirth, or Gateway).
+- Manual stage change behavior:
+  - Changing stage immediately resets in-progress combat state and targets the newly selected monster/stage.
+  - Stage clear progress for the newly selected stage starts at 0 (no carry-over from another stage).
 
 ### Prestige System
 #### Unlock Levels
-- Training unlock level listed as **11** in prestige section.
-- Rebirth unlock level: 101.
-- Gateway unlock level: 1001.
+- Training unlocks after beating the boss at level 10.
+- Rebirth unlocks after beating the boss at level 100.
+- Gateway unlocks after beating the boss at level 1000.
 - Rebirth and Gateway systems are intentionally deferred for later definition.
 
 #### Prestige Reset Rule (General)
@@ -95,13 +105,13 @@
 - Training screen includes a warning that training resets battle progress and returns player to base stats.
 - On Training reset click:
   - Reset character to Level 1, Strength 1, Experience 0.
-  - Reset weapon upgrade level as specified in source (see contradiction note below).
-  - Award `TrainingPoint` based on highest level reached and milestone reward formula.
+  - Reset `WeaponUpgradeLevel` to 0.
+  - Award `TrainingPoint` as the sum of milestone rewards for all milestones reached.
 - Persisted tracking:
   - Number of Training resets.
   - Total Training Points earned.
 - Visibility behavior:
-  - Training link appears after level threshold is reached.
+  - Training link appears after the level 10 boss is defeated.
   - After first Training reset, Training link always remains visible.
   - After first Training reset, Training screen shows upgrade table:
     - Columns: Prestige Upgradable Attribute | Current Value | Upgrade Button with TrainingPoint cost.
@@ -124,10 +134,16 @@
   - +0.01 per TrainingPoint investment.
 - `MonsterSoulModifier` (default: 1.0)
   - +0.01 per TrainingPoint investment.
+- Upgrade cost model (all Training prestige attributes):
+  - `TrainingPrestigeBaseCost = 1`
+  - `TrainingPrestigeCostGrowthRate = 1.1`
+  - `TrainingPrestigeUpgradeCost(attribute) = FLOOR(TrainingPrestigeBaseCost * TrainingPrestigeCostGrowthRate^attributeUpgradeLevel)`
+  - Each attribute tracks its own `attributeUpgradeLevel` (default: 0).
 
 ## Idle/Offline Mechanics
 - Autosave should occur locally every 5 minutes.
-- No explicit offline progression/earnings formula, cap, or simulation method is defined in the source.
+- No offline progression is intended.
+- Game simulation is real-time while the game is running, including when in background.
 
 ## Automation
 - Auto-advance checkbox: when enabled, automatically move to next stage after current stage clear requirement is met.
@@ -158,6 +174,7 @@ Track and display/store:
 - Time to first Training.
 - Time to first Rebirth.
 - Time to first Gateway.
+- Time tracking mode: real-time (foreground and background while running).
 
 ### Large Number Handling
 - Game is expected to reach very large values.
@@ -171,7 +188,7 @@ Track and display/store:
   - Bottom row: content panel for selected navigation section.
 
 ### Navigation Defaults
-- Initially visible links include Armory and Options.
+- Initially visible links include Armory, Achievements, and Options.
 - Achievements appears to the left of Options.
 - Training link appears later based on unlock rules.
 
@@ -196,35 +213,43 @@ Track and display/store:
 - Save output format: base64-encoded game-state string shown in adjacent text field.
 - Load input: pasted base64 string with confirmation step.
 
+### Save Integrity / Anti-Tamper Direction
+- Chosen approach: local-only tamper-evident saves with corruption detection, optional passphrase-locked exports, and rolling backups.
+- Security reality (explicit): without a server-held secret, true anti-tamper is not achievable against a determined player in a client-only game.
+- Primary goals:
+  - Detect accidental corruption reliably.
+  - Detect casual/manual edits to exported save strings.
+  - Preserve recoverability with backups.
+- Save bundle format (canonical):
+  - `version`, `schema`, `issuedAt`, `nonce`, `payload`, `checksum`.
+  - `payload` is canonical JSON (stable key order, normalized numeric/string formats).
+  - `checksum = SHA-256(payload + metadata)` for integrity verification.
+- Optional locked export mode (recommended):
+  - Player enters export passphrase.
+  - Derive key via `PBKDF2` (high iteration count, per-save random salt).
+  - Encrypt canonical payload with `AES-GCM` using random IV.
+  - Store/export `{kdfParams, iv, ciphertext, authTag}` as base64 bundle.
+  - Import requires passphrase; decryption/authentication failure rejects load.
+- Load policy:
+  - Autosave/local load: verify checksum; on mismatch, mark save corrupted and offer latest valid backup.
+  - Import string load: require checksum verification (and passphrase decryption when locked export is used).
+  - Never silently accept invalid bundles.
+- Reliability safeguards:
+  - Maintain rolling backup slots (for example last 3 valid autosaves with timestamps).
+  - Write-then-swap strategy to avoid partial-write corruption.
+  - Include `schema`/`version` for future migrations.
+- Platform notes:
+  - Use Web Crypto API (`crypto.subtle`) for SHA-256, PBKDF2, and AES-GCM.
+  - Web Crypto requires a secure context; if unavailable, disable locked export and keep checksum + backups only.
+
 ## Out of Scope / Rejected Ideas
 - Rebirth and Gateway prestige attributes/effects are intentionally not yet defined and are deferred to a future design pass.
+- Endurance and EnduranceGrowth are removed from the current design.
+- MonsterDifficultyModifier is removed from the current design.
+- Progression is intentionally endless (no final win-state).
 
 ## Contradictions & Ambiguities Detected
-- Training unlock threshold appears in two places with different values:
-  - Navigation note: Training link appears after player reaches level 10.
-  - Prestige unlock list: Training unlocks at level 11.
-- `WeaponUpgradeLevel` default is 0, but Training reset instruction says reset to `WeaponUpgradeLevel = 1`.
-- `TrainingPoint` spend list includes `EnduranceGrowth`, but this attribute is not defined in the prestige-upgradable-attributes section.
-- `Endurance` is referenced as a level-up gain stat, but its default value and gameplay effect are not defined.
-- `DamageDealt` formula uses `MonsterDifficultyModifier`, but this variable has no definition/formula.
-- DPS formula uses `DamageDealt * AttackSpeedBase`; if `AttackSpeedBase` is in seconds per attack, this may conflict with conventional DPS interpretation.
+- No unresolved contradictions currently in the Training-layer design.
 
 ## Open Questions
-1. Should Training unlock at level 10 or level 11?
-2. On Training reset, should `WeaponUpgradeLevel` reset to 0 (its default) or to 1 as currently written?
-3. What is the exact definition of `BaseDamage`? Is it always equal to `Strength`, or are additional terms intended?
-4. What is `MonsterDifficultyModifier`, and how is it calculated per stage/monster?
-5. Is the DPS formula intentionally `FLOOR(DamageDealt * AttackSpeedBase)`, or should it use attacks-per-second (`DamageDealt / AttackSpeedBase`)?
-6. What are `Endurance` and `EnduranceGrowth` used for (default values, growth, and gameplay effects)?
-7. Are all prestige upgrades priced at exactly 1 `TrainingPoint` per purchase, or does each have its own scaling cost formula?
-8. How exactly are TrainingPoint rewards computed from milestones when a reset occurs:
-   - Sum rewards for all milestones reached?
-   - Reward only the highest milestone reached?
-   - Reward only newly crossed milestones since last Training?
-9. Should stage progress (10-kill completion counts) persist through normal play session changes and app reloads, and how is it reset by each prestige tier?
-10. When the player manually changes stage during/after combat, what happens to in-progress combat state and cooldown timer?
-11. For boss stages (10/100/1000), do they still require 10 kills to advance, or does a single mandatory boss clear replace the normal 10-kill gate?
-12. How should save-data tamper resistance work for base64 saves: checksum, signature/HMAC, obfuscation, or another approach?
-13. What is the exact data schema for tracked timers (real-time vs active-time, pause/background handling)?
-14. Is offline progress intended at all? If yes, what systems should simulate offline and what cap limits should apply?
-15. Are there any win-state/end-state conditions, or is progression intentionally endless?
+1. Should locked export mode be optional (default off) or required for all manual save exports?
