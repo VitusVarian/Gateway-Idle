@@ -95,3 +95,17 @@ Grid layout, 5 wide, contains an image and a description of the unlock criteria.
 OTHER:
 Game needs to autosave progress locally every 5 minutes
 Game will likely contain big numbers - Make sure to include a library that can handle them and be performant
+Need time counters: Overall time playing game, time in current training, time in current rebirth, time in current Gateway, time for first training, time for first rebirth, time for first gateway
+
+Prestige mechanics:
+Need to pass a certain level to unlock the ability
+When using the particular level of prestige, reset all stats from lesser prestige types back to their default value, unless the stat specifies that it doesn't reset
+Unlock prestiges at
+    Training - level 11
+    Rebirth - level 101
+    Gateway - level 1001
+Bosses appear in order to unlock the prestige mechanic at level 10, level 100, and level 1000. These bosses should have double the stats of the level before it (level 10 boss has double the stats of level 9).
+Boss levels are single monster fights and cannot be reduced or increased (you will always need to fight the boss to progress)
+After a boss level, the monster attribute scaling should continue from the bosses stats (creating a step up in difficulty from the former curve)
+
+Rebirth and Gateway prestige levels and attributes will be added later.
