@@ -15,6 +15,14 @@
 7. Eventually perform Training reset to earn TrainingPoint and improve meta-progression stats.
 8. Repeat the loop faster/stronger each cycle.
 
+### Pacing Targets (Initial Balancing)
+- New player target time to first Training reset: about 20 minutes.
+- After first Training reset, target cycle times are:
+  - Cycle 2: about 10 minutes.
+  - Cycle 3: about 5 minutes.
+  - Cycle 4 and onward short target: about 3 minutes.
+- These are balancing targets, not strict guarantees; tuning should keep typical play near these ranges.
+
 ### Battle Flow
 - Combat runs until the current monster reaches 0 HP or below, or until the player chooses a different monster/stage.
 - After each monster battle, there is a 3-second cooldown before the next battle begins.
@@ -66,7 +74,10 @@
 - `BaseDamage = Strength` (current implementation).
 - Future intent: `BaseDamage` may later become a sum of Strength plus additional modifiers.
 - `DamageDealt = FLOOR(BaseDamage * DamageMultiplier)`
-- `MonsterHitPoints = FLOOR(MonsterBaseHitPoints * (MonsterLevel * MonsterCoefficient + MonsterGrowthRate^MonsterLevel))`
+- `MonsterRawHP(level) = MonsterBaseHitPoints * (level * MonsterCoefficient + MonsterGrowthRate^level)`
+- `BossLevels = {10, 100, 1000}`
+- `TierMultiplier(level) = 2 ^ (count of BossLevels <= level)`
+- `MonsterHitPoints(level) = FLOOR(MonsterRawHP(level) * TierMultiplier(level))`
 - `MonsterBaseHitPoints = 10`
 - `MonsterCoefficient = 2`
 - `MonsterGrowthRate = 1.08`
@@ -74,22 +85,31 @@
 - `MonsterSoulGain = FLOOR(10 * MonsterLevel * MonsterSoulModifier)`
 - `AttackSpeedBase = 0.8`
 - `DPSvalue = FLOOR(DamageDealt / AttackSpeedBase)`
+- `EstimatedExpPerSecond` and `EstimatedMonsterSoulPerSecond` are derived from recent kill outcomes on the current stage.
+- Window target: last 60 seconds of kills.
+- Recommended implementation: fixed 60-bucket rolling window (1 bucket/second) that stores summed Experience and MonsterSoul rewards for kills in that second.
+- `EstimatedExpPerSecond = SUM(windowExpRewards) / 60`
+- `EstimatedMonsterSoulPerSecond = SUM(windowSoulRewards) / 60`
+- This bucketed approach avoids per-kill list scans and remains performant at high kill rates.
 
 ### Stage Progression and Boss Gates
 - Standard stages require 10 monster defeats at stage level `x` to unlock stage `x+1`.
 - Boss stages at levels 10, 100, and 1000 unlock prestige tiers.
+- A player can never advance beyond the current stage until that stage's required kills are completed in the current prestige cycle.
 - Boss stage rules:
   - Single-monster mandatory fights.
   - A boss clear replaces the standard 10-kill gate for that level.
   - Cannot skip, reduce, or increase boss stage difficulty.
-  - Boss stats are double the previous level's stats (example given: level 10 boss = 2x level 9).
-- After each boss stage, normal monster scaling continues from the boss-adjusted stat level, preserving a step-up in difficulty.
+  - Boss and normal-stage HP both follow `MonsterHitPoints(level)` with tier multipliers defined above.
+- Step-ups at boss thresholds are represented by `TierMultiplier(level)`, so post-threshold normal stages continue from the elevated tier automatically.
 - Stage progression persistence:
-  - Stage progression persists across normal play and reloads.
+  - Persist only the cycle-level `maxUnlockedStage` value.
+  - Once a stage gate is cleared (for example stage 8 reaches 10/10), the player may continue to stage 9 or remain farming stage 8 with no further kill requirement on that stage during the same prestige cycle.
   - Stage progression resets to default when any prestige is used (Training, Rebirth, or Gateway).
 - Manual stage change behavior:
   - Changing stage immediately resets in-progress combat state and targets the newly selected monster/stage.
-  - Stage clear progress for the newly selected stage starts at 0 (no carry-over from another stage).
+  - The game tracks kill progress only for the currently active stage.
+  - Leaving a stage clears that stage's active kill counter; returning to that stage starts from 0 kills.
 
 ### Prestige System
 #### Unlock Levels
@@ -101,11 +121,45 @@
 #### Prestige Reset Rule (General)
 - Using a prestige tier resets all lower-tier prestige stats to defaults, except stats explicitly marked as non-resetting.
 
+#### Forward-Compatible Prestige Reset Matrix (Draft)
+The matrix below is a planning template so future tiers can be added without redefining reset semantics.
+
+| State Domain | Training Reset | Rebirth Reset (draft) | Gateway Reset (draft) |
+|---|---|---|---|
+| Run combat state (`currentStage`, `maxUnlockedStage`, `killsOnStage`, active combat/cooldown target) | Reset to defaults | Reset to defaults | Reset to defaults |
+| Run character state (`level`, `strength`, `experience`) | Reset to defaults | Reset to defaults | Reset to defaults |
+| Run economy state (`monsterSoul`, `weaponUpgradeLevel`, `damageMultiplier`) | Reset to defaults | Reset to defaults | Reset to defaults |
+| Run telemetry (`killRateWindow`, `trainingCycleMs`) | Reset to defaults | Reset to defaults | Reset to defaults |
+| Training currency balance (`trainingPoints`) | Persist (spent/unspent unchanged) | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
+| Training upgrades (`strengthGrowthLevel`, `levelingDifficultyLevel`, `experienceModifierLevel`, `monsterSoulModifierLevel`) | Persist | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
+| Training lifetime counters (`trainingResetCount`, `totalTrainingPointsEarned`) | Persist | Reset policy TBD (likely reset by strict lower-tier rule) | Reset policy TBD (likely reset by strict lower-tier rule) |
+| Achievement unlock flags | Persist | Persist by default | Persist by default |
+| Save metadata (`version`, `schema`, backup slots) | Persist | Persist | Persist |
+
+Draft rule intent:
+- Any tier reset clears run-layer progression.
+- Higher prestige tiers should define explicitly which lower-tier meta fields, if any, are non-resetting exceptions.
+- If no exception is defined, apply the strict lower-tier reset rule.
+
 #### Training Screen and Training Reset
 - Training screen includes a warning that training resets battle progress and returns player to base stats.
 - On Training reset click:
-  - Reset character to Level 1, Strength 1, Experience 0.
-  - Reset `WeaponUpgradeLevel` to 0.
+  - Reset the following fields to default:
+    - `level`
+    - `strength`
+    - `strengthGrowth`
+    - `experience`
+    - `currentStage`
+    - `maxUnlockedStage`
+    - `killsOnStage`
+    - `damageMultiplier`
+    - `killRateWindow`
+    - `monsterSoul`
+    - `weaponUpgradeLevel`
+    - `trainingCycleMs`
+  - Post-reset recomputation rule:
+    - Effective runtime values are recalculated from persisted prestige-upgrade levels after defaults are applied.
+    - This means reset-to-default fields such as `strengthGrowth` can be reset first, then recalculated from persistent Training upgrade levels.
   - Award `TrainingPoint` as the sum of milestone rewards for all milestones reached.
 - Persisted tracking:
   - Number of Training resets.
@@ -123,6 +177,10 @@
 - `MilestoneReward(n) = FLOOR(BaseReward + RewardCoeff * SQRT(n))`
 - `BaseReward = 1`
 - `RewardCoeff = 2`
+- Milestone trigger metric for Training rewards: highest stage reached in the current cycle.
+- Milestone rewards are re-earned each Training cycle (not one-time lifetime claims).
+- Per-reset reward total:
+  - `CycleTrainingPointsAwarded = SUM(MilestoneReward(n)) for all n where MilestoneLevel(n) <= HighestStageReachedThisCycle`
 
 #### Training Prestige-Upgradable Attributes
 - `StrengthGrowth` (default: 1)
@@ -160,7 +218,10 @@
 ### Achievements
 - Grid layout, 5 columns wide.
 - Each achievement displays an image plus unlock-condition description.
-- Optional reward line per achievement.
+- Achievement rewards are mixed by design:
+  - Some achievements grant gameplay rewards.
+  - Some achievements are non-reward/cosmetic-only.
+  - Each achievement definition must declare reward type explicitly (`none` or concrete reward payload).
 - Visual state:
   - Locked = greyed out.
   - Unlocked = colorful.
@@ -198,7 +259,15 @@ Track and display/store:
 - Advance arrow hidden when stage-clear requirement not met.
 - Player character animation on left, monster on right.
 - DPS readout near player: `DPS: <value>`.
+- Under DPS, show estimated `Exp/s: <value>`.
+- Under Exp/s, show estimated `Monster Souls/s: <value>`.
 - Vertical monster health bar near monster, updates as damage is dealt.
+
+### Player-Facing Naming Convention
+- Internal identifiers in formulas/state may remain compact (`MonsterSoul`, `TrainingPoint`).
+- Player-facing labels must use spaced words and pluralized forms where appropriate:
+  - `Monster Souls`
+  - `Training Points`
 
 ### Armory UI Elements
 - Weapon image on left.
@@ -214,33 +283,31 @@ Track and display/store:
 - Load input: pasted base64 string with confirmation step.
 
 ### Save Integrity / Anti-Tamper Direction
-- Chosen approach: local-only tamper-evident saves with corruption detection, optional passphrase-locked exports, and rolling backups.
+- Chosen approach: local-only tamper-evident saves with corruption detection, salted Base64 export/import bundles, and rolling backups.
 - Security reality (explicit): without a server-held secret, true anti-tamper is not achievable against a determined player in a client-only game.
 - Primary goals:
   - Detect accidental corruption reliably.
   - Detect casual/manual edits to exported save strings.
   - Preserve recoverability with backups.
 - Save bundle format (canonical):
-  - `version`, `schema`, `issuedAt`, `nonce`, `payload`, `checksum`.
+  - `version`, `schema`, `issuedAt`, `salt`, `payload`, `checksum`.
   - `payload` is canonical JSON (stable key order, normalized numeric/string formats).
   - `checksum = SHA-256(payload + metadata)` for integrity verification.
-- Optional locked export mode (recommended):
-  - Player enters export passphrase.
-  - Derive key via `PBKDF2` (high iteration count, per-save random salt).
-  - Encrypt canonical payload with `AES-GCM` using random IV.
-  - Store/export `{kdfParams, iv, ciphertext, authTag}` as base64 bundle.
-  - Import requires passphrase; decryption/authentication failure rejects load.
+- Export/import encoding:
+  - Export serializes canonical save bundle as Base64.
+  - `salt` is generated per export and included in bundle metadata.
+  - No passphrase entry or encryption mode is used in this design.
 - Load policy:
   - Autosave/local load: verify checksum; on mismatch, mark save corrupted and offer latest valid backup.
-  - Import string load: require checksum verification (and passphrase decryption when locked export is used).
+  - Import string load: require checksum verification before accepting bundle.
   - Never silently accept invalid bundles.
 - Reliability safeguards:
   - Maintain rolling backup slots (for example last 3 valid autosaves with timestamps).
   - Write-then-swap strategy to avoid partial-write corruption.
   - Include `schema`/`version` for future migrations.
 - Platform notes:
-  - Use Web Crypto API (`crypto.subtle`) for SHA-256, PBKDF2, and AES-GCM.
-  - Web Crypto requires a secure context; if unavailable, disable locked export and keep checksum + backups only.
+  - Use Web Crypto API (`crypto.subtle`) for SHA-256 and secure salt generation.
+  - Web Crypto requires a secure context; if unavailable, keep checksum verification and backups with fallback salt generation strategy.
 
 ## Out of Scope / Rejected Ideas
 - Rebirth and Gateway prestige attributes/effects are intentionally not yet defined and are deferred to a future design pass.
@@ -252,4 +319,4 @@ Track and display/store:
 - No unresolved contradictions currently in the Training-layer design.
 
 ## Open Questions
-1. Should locked export mode be optional (default off) or required for all manual save exports?
+- No unresolved open questions currently tracked in this document.

@@ -1,5 +1,5 @@
 # Game Summary (5-10 sentences)
-Gateway of Darkness Idle is a browser-based incremental RPG with an always-running combat loop and long-horizon prestige progression. The player repeatedly fights stage-based monsters, gains Experience and MonsterSoul, levels up to increase Strength, and upgrades weapons in the Armory to raise damage output. Combat resolves automatically on a timer, with the player primarily making strategic UI decisions: selecting stages, spending resources, and triggering prestige resets. Stage progression follows a kill-gate structure with special boss gates at stage 10, 100, and 1000 that unlock deeper prestige layers. The first implemented prestige layer, Training, resets core run progress but grants TrainingPoints that permanently improve growth and economy modifiers. The game is intentionally endless, with no final victory screen; progression speed and milestone timing are the core satisfaction loop. The UI must continuously present combat clarity (damage, DPS, health, stage state), economy feedback (costs, affordability, rewards), and reset consequences (what is lost vs retained). The experience should feel calm but compelling: low click intensity, high readability, and clear momentum from each optimization decision.
+Gateway of Darkness Idle is a browser-based incremental RPG with an always-running combat loop and long-horizon prestige progression. The player repeatedly fights stage-based monsters, gains Experience and Monster Souls, levels up to increase Strength, and upgrades weapons in the Armory to raise damage output. Combat resolves automatically on a timer, with the player primarily making strategic UI decisions: selecting stages, spending resources, and triggering prestige resets. Stage progression follows a kill-gate structure with special boss gates at stage 10, 100, and 1000 that unlock deeper prestige layers. The first implemented prestige layer, Training, resets core run progress but grants Training Points that permanently improve growth and economy modifiers. The game is intentionally endless, with no final victory screen; progression speed and milestone timing are the core satisfaction loop. The UI must continuously present combat clarity (damage, DPS, health, stage state), economy feedback (costs, affordability, rewards), and reset consequences (what is lost vs retained). The experience should feel calm but compelling: low click intensity, high readability, and clear momentum from each optimization decision.
 
 # Tech Stack & Architecture
 Framework recommendation: React + TypeScript.
@@ -38,8 +38,8 @@ Suggested folder/module structure:
 		- feedback/ - Toasts, banners, inline status, loading/error shells
 		- modals/ - Confirmation and danger dialog components
 	- services/
-		- save/ - Autosave, checksum verification, rolling backups, import/export adapters
-		- crypto/ - Web Crypto wrappers for checksum and optional passphrase encryption
+		- save/ - Autosave, salted Base64 export/import encoding, checksum verification, rolling backups
+		- crypto/ - Web Crypto wrappers for salt generation and checksum utilities
 		- time/ - Session/run timer tracking and formatting
 	- assets/ - Images, sprite sheets, fonts, UI textures
 	- styles/ - Global tokens, resets, motion settings, layout utilities
@@ -56,7 +56,7 @@ Design pattern recommendations:
 | Screen or State | Purpose | Key Components | Reads From State | Dispatches Actions/Events | Entry Trigger | Exit Trigger |
 |---|---|---|---|---|---|---|
 | App Shell | Three-row game frame and persistent navigation | TopNav, MiddleBattleContainer, BottomPanelHost, GlobalToastRegion, ModalHost | Screen selection, unlock flags, global alerts | Change active panel, open/close modal | App boot complete | Never fully exits during runtime |
-| Battle Screen (middle row) | Real-time combat visibility and stage control | StageStepper, AutoAdvanceToggle, PlayerDisplay, MonsterDisplay, MonsterHealthBar, DPSReadout, BattleStatus | Current stage, unlock status, monster HP/max HP, attack timer, damage, cooldown, kills toward stage gate | Start battle, change stage, toggle auto-advance | Default on startup and persistent in middle row | Only combat substate changes (screen remains mounted) |
+| Battle Screen (middle row) | Real-time combat visibility and stage control | StageStepper, AutoAdvanceToggle, PlayerDisplay, MonsterDisplay, MonsterHealthBar, DPSReadout, ExpPerSecondReadout, MonsterSoulPerSecondReadout, BattleStatus | Current stage, unlock status, monster HP/max HP, attack timer, damage, cooldown, kills toward stage gate, recent kill telemetry window | Start battle, change stage, toggle auto-advance | Default on startup and persistent in middle row | Only combat substate changes (screen remains mounted) |
 | Armory Panel | Spend MonsterSoul on weapon progression | WeaponCard, DamageMultiplierStat, WeaponLevelStat, UpgradeButton, CostLabel, WarningMessage | MonsterSoul, WeaponUpgradeLevel, DamageMultiplier, WeaponUpgradeCost | Attempt weapon upgrade | Nav selection Armory (default bottom panel) | Nav change |
 | Achievements Panel | Track unlockable goals in a visual grid | AchievementGrid, AchievementTile, UnlockBadge, RewardText | Achievement list, unlocked flags, optional reward metadata | Optional: claim reward if designed later | Nav selection Achievements | Nav change |
 | Options Panel | Save/load/reset and data safety controls | SaveButton, LoadSection, ExportStringField, ImportField, ConfirmDialogs, ResetDangerZone, BackupStatus | Save metadata, corruption state, backup history, import text validity | Manual save, manual load, import bundle, full reset, confirm/cancel dialogs | Nav selection Options | Nav change |
@@ -117,6 +117,7 @@ Core UI-relevant game state to read and mutate:
 - Timers: total play time, current Training cycle time, current Rebirth cycle time, current Gateway cycle time, time-to-first milestones.
 - Save system state: last autosave timestamp, backup snapshot metadata, checksum status, import validation state.
 - Navigation and panels: active bottom panel, training link visibility conditions.
+- Visual placeholders: player placeholder asset ID, shared monster placeholder asset ID, shared boss placeholder asset ID.
 
 Primary state shape sketch (high-level):
 
@@ -134,6 +135,7 @@ Primary state shape sketch (high-level):
 	- combat
 		- phase: idle | battling | postBattleCooldown
 		- currentStage: number
+		- maxUnlockedStage: number
 		- isBossStage: boolean
 		- monsterHpCurrent: number
 		- monsterHpMax: number
@@ -142,6 +144,7 @@ Primary state shape sketch (high-level):
 		- attackSpeedBase: number
 		- damageMultiplier: number
 		- autoAdvanceEnabled: boolean
+		- killRateWindow: RollingKillWindow
 	- economy
 		- monsterSoul: number
 		- weaponUpgradeLevel: number
@@ -181,6 +184,7 @@ Data flow direction:
 1. Engine tick computes deterministic game updates (combat damage, cooldown expiry, reward grants, level-up checks).
 2. Game store is updated through atomic actions.
 3. Selector layer derives UI-ready values (DPS text, upgrade affordability, stage lock messaging).
+	It also derives estimated Exp/s and Monster Soul/s from the recent kill window.
 4. React components subscribe to narrow selectors and render.
 5. User interactions dispatch intent actions back to store/engine (for example setStage, buyWeaponUpgrade, triggerTrainingReset).
 
@@ -193,6 +197,7 @@ Update and tick targets:
 Frequent vs infrequent renders:
 
 - Frequent: monster HP bar, cooldown timer, battle phase labels, DPS display.
+- Frequent: estimated Exp/s and Monster Soul/s display.
 - Medium: resources (Experience, MonsterSoul), stage kill counters.
 - Infrequent: training tables, options forms, achievements grid unlock transitions.
 
@@ -202,6 +207,7 @@ Render optimization strategy:
 - Keep heavy lists (achievements) memoized and keyed by unlock hash.
 - Split middle-row combat display from bottom-panel navigation to prevent panel rerenders from affecting combat.
 - Batch state updates inside each simulation tick.
+- For estimated Exp/s and Monster Soul/s, prefer fixed-size rolling buckets (for example 60 one-second buckets) over storing raw kill history.
 
 Animation recommendations:
 
@@ -267,16 +273,27 @@ The game tone is dark fantasy with a ritual, ancient-gate atmosphere, but the in
 Assumption: no official art bible or sprite pack exists yet, so this serves as a default visual direction for initial implementation.
 
 # Open Questions & Assumptions Log
-1. Open question: Should passphrase-locked export be optional or required for all manual exports?
-2. Open question: Are there approved character/monster art assets, or should placeholder silhouettes be used in the first UI pass?
-3. Open question: Is there a fixed achievement list at launch, including icon set and reward text, or should the UI support data-driven placeholders?
-4. Open question: Should stage progression details persist per stage exactly as started, or only as aggregate unlock level plus current stage kill progress?
-5. Open question: Should combat logs (damage history or kill feed) be visible, or is the DPS and HP presentation sufficient?
-6. Assumption: Single-player only; no multiplayer, social, or network latency UI is required.
-7. Assumption: No pause system exists; simulation continues while app is open, including background tab behavior where browser timers permit.
-8. Assumption: Rebirth and Gateway screens are not implemented in the first UI scope beyond timer placeholders and locked/unavailable indicators.
-9. Assumption: Battle remains always visible in the middle row while bottom panel content changes via navigation.
-10. Assumption: Desktop keyboard shortcuts are included as quality-of-life features.
+1. Decision: Remove passphrase-locked exports. Manual export/import uses salted Base64 payloads with checksum validation.
+2. Decision: Use placeholder art in the first UI pass. Player has one placeholder, all regular monsters share one placeholder, and all bosses share one placeholder.
+3. Decision: UI must support data-driven placeholders (including achievements and content lists not yet finalized).
+4. Decision: Stage progression persists only as max unlocked stage within the current prestige cycle plus kill count on the currently active stage. Kill count resets when leaving a stage, and returning to that stage starts its kill count from 0. Once a stage gate is cleared (for example 10/10 at stage 8), that stage remains unlocked for this cycle and can be farmed without any further gate requirement. Any prestige reset (Training/Rebirth/Gateway) resets max unlocked stage to default.
+5. Decision: DPS and HP presentation is sufficient; no combat log panel in initial scope.
+6. Confirmed assumption: Single-player only; no multiplayer, social, or network latency UI is required.
+7. Confirmed assumption: No pause system exists; simulation continues while app is open, including background tab behavior where browser timers permit.
+8. Confirmed assumption: Rebirth and Gateway screens are not implemented in the first UI scope beyond timer placeholders and locked/unavailable indicators.
+9. Confirmed assumption: Battle remains always visible in the middle row while bottom panel content changes via navigation.
+10. Confirmed assumption: Desktop keyboard shortcuts are included as quality-of-life features.
+11. Decision: Target time to first Training for a new player is about 20 minutes.
+12. Decision: Target Training cycle pacing after first reset is about 10 minutes, then about 5 minutes, then about 3 minutes.
+13. Decision: On Training reset, reset these fields to default: `level`, `strength`, `strengthGrowth`, `experience`, `currentStage`, `maxUnlockedStage`, `killsOnStage`, `damageMultiplier`, `killRateWindow`, `monsterSoul`, `weaponUpgradeLevel`, and `trainingCycleMs`.
+14. Decision: Training milestone reward entitlement is based on highest stage reached in the current cycle.
+15. Decision: Training milestone rewards are re-earned each cycle.
+16. Decision: Monster HP model uses tier multipliers by boss thresholds:
+	- `MonsterRawHP(level) = MonsterBaseHitPoints * (level * MonsterCoefficient + MonsterGrowthRate^level)`
+	- `BossLevels = {10, 100, 1000}`
+	- `TierMultiplier(level) = 2 ^ (count of BossLevels <= level)`
+	- `MonsterHitPoints(level) = FLOOR(MonsterRawHP(level) * TierMultiplier(level))`
+17. Decision: Player-facing text uses spaced labels (`Monster Souls`, `Training Points`), while internal state keys may remain compact.
 
 # Suggested Build Order
 Phase 1: Foundation and shell
