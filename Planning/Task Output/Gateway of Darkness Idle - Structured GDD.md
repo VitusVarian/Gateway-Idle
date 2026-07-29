@@ -119,7 +119,6 @@
 - Rebirth and Gateway systems are intentionally deferred for later definition.
 
 #### Prestige Reset Rule (General)
-- Using a prestige tier resets all lower-tier prestige stats to defaults, except stats explicitly marked as non-resetting.
 
 #### Forward-Compatible Prestige Reset Matrix (Draft)
 The matrix below is a planning template so future tiers can be added without redefining reset semantics.
@@ -132,7 +131,7 @@ The matrix below is a planning template so future tiers can be added without red
 | Run telemetry (`killRateWindow`, `trainingCycleMs`) | Reset to defaults | Reset to defaults | Reset to defaults |
 | Training currency balance (`trainingPoints`) | Persist (spent/unspent unchanged) | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
 | Training upgrades (`strengthGrowthLevel`, `levelingDifficultyLevel`, `experienceModifierLevel`, `monsterSoulModifierLevel`) | Persist | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
-| Training lifetime counters (`trainingResetCount`, `totalTrainingPointsEarned`) | Persist | Reset policy TBD (likely reset by strict lower-tier rule) | Reset policy TBD (likely reset by strict lower-tier rule) |
+| Training lifetime counters (`trainingResetCount`, `totalTrainingPointsEarned`) | Persist | Persist (lifetime analytics; non-currency, non-power) | Persist (lifetime analytics; non-currency, non-power) |
 | Achievement unlock flags | Persist | Persist by default | Persist by default |
 | Save metadata (`version`, `schema`, backup slots) | Persist | Persist | Persist |
 

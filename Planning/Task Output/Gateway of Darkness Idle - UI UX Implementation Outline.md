@@ -294,6 +294,10 @@ Assumption: no official art bible or sprite pack exists yet, so this serves as a
 	- `TierMultiplier(level) = 2 ^ (count of BossLevels <= level)`
 	- `MonsterHitPoints(level) = FLOOR(MonsterRawHP(level) * TierMultiplier(level))`
 17. Decision: Player-facing text uses spaced labels (`Monster Souls`, `Training Points`), while internal state keys may remain compact.
+18. Decision: `trainingResetCount` and `totalTrainingPointsEarned` persist across Training, Rebirth, and Gateway as lifetime counters (not currency/power).
+19. Decision: On Training reset, default reset fields first, then recompute effective runtime values from persisted Training upgrade levels (including `strengthGrowth`).
+20. Decision: Initial achievement catalog requires explicit `rewardType` for every achievement (`none` or concrete reward payload).
+21. Decision: Enforce spaced player-facing terminology globally across UI strings.
 
 # Suggested Build Order
 Phase 1: Foundation and shell

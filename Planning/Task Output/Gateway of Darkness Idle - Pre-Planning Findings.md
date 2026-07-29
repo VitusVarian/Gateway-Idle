@@ -1,25 +1,22 @@
 # Gateway of Darkness Idle - Pre-Planning Findings (Post-Answers)
 
 ## Summary
-Most previously blocking gaps are now resolved. Planning can begin once the remaining clarification items below are confirmed.
+All previously blocking clarification items are now resolved. Planning can proceed.
 
-## Remaining Items Requiring Confirmation
+## Confirmed Decisions
 
 1. Rebirth/Gateway reset policy for Training lifetime counters
-- The current draft matrix marks `trainingResetCount` and `totalTrainingPointsEarned` as "reset policy TBD" under Rebirth/Gateway.
-- Confirm whether these should reset strictly (per lower-tier reset rule) or persist as lifetime analytics.
+- `trainingResetCount` and `totalTrainingPointsEarned` persist across Training, Rebirth, and Gateway resets.
+- Rationale: these are lifetime counters/analytics and are not spendable currency or direct power stats.
 
 2. Achievement reward catalog completeness
-- Design now supports mixed achievements (some rewarding, some cosmetic-only).
-- Confirm the initial achievement list includes explicit `rewardType` for each entry (`none` or concrete reward payload).
+- Confirmed. The initial achievement list must include explicit `rewardType` on every entry (`none` or a concrete reward payload).
 
 3. Training reset recomputation rule acceptance
-- The GDD now states reset fields are defaulted first, then effective runtime values are recomputed from persisted Training upgrade levels.
-- Confirm this is the intended implementation behavior, especially for `strengthGrowth`.
+- Confirmed. On Training reset, fields are defaulted first, then effective runtime values are recomputed from persisted Training upgrade levels (including `strengthGrowth`).
 
 4. Naming convention lock
-- Player-facing labels are now standardized as spaced terms (for example, "Monster Souls" and "Training Points").
-- Confirm this convention should be enforced globally across all UI strings.
+- Confirmed. Player-facing spaced labels (for example, "Monster Souls" and "Training Points") are the global UI naming standard.
 
 ## Updated Source Documents
 - Structured GDD updated with pacing targets, reset field list, milestone trigger/re-earn logic, revised monster HP formulas, naming convention, and draft forward-compatible reset matrix.
