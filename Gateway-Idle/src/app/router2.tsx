@@ -1,9 +1,3 @@
-import { createHashRouter } from 'react-router-dom'
-import { GamePage } from '../pages/GamePage2'
+import { router as gameRouter } from './router'
 
-export const router = createHashRouter([
-  {
-    path: '/',
-    element: <GamePage />,
-  },
-])
+export const router = gameRouter

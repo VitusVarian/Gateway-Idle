@@ -63,49 +63,22 @@ function isBossStage(stage: number): boolean {
 function calculateMonsterHitPoints(stage: number): BigNumber {
   const bossThresholdsReached = BOSS_STAGES.filter((bossStage) => stage >= bossStage).length
   const tierMultiplier = new BigNumber(2).pow(bossThresholdsReached)
-  const baseHitPoints = new BigNumber(10)
-    .multipliedBy(new BigNumber(stage).multipliedBy(2).plus(new BigNumber(1.08).pow(stage)))
-    .integerValue(BigNumber.ROUND_FLOOR)
-
-  return baseHitPoints.multipliedBy(tierMultiplier)
-}
-
-function getTrainingMilestoneStages(limit: number): number[] {
-  const milestones: number[] = []
-  let index = 0
-
-  while (true) {
-    const milestone = Math.floor(FIRST_MILESTONE_STAGE * MILESTONE_SPACING ** index)
-    if (milestone > limit) {
-      return milestones
-    }
-
-    milestones.push(milestone)
-    index += 1
-  }
-}
-
-function calculateTrainingMilestoneReward(highestStage: number): BigNumber {
-  return getTrainingMilestoneStages(highestStage).reduce((total, _milestone, index) => {
-    const reward = Math.floor(
-      TRAINING_BASE_REWARD + TRAINING_REWARD_COEFFICIENT * Math.sqrt(index + 1),
-    )
-    return total.plus(reward)
-  }, new BigNumber(0))
-}
-
-export function getTrainingUpgradeCost(level: number): BigNumber {
-  return new BigNumber(TRAINING_UPGRADE_BASE_COST)
-    .multipliedBy(new BigNumber(TRAINING_UPGRADE_COST_RATE).pow(level))
-    .integerValue(BigNumber.ROUND_FLOOR)
-}
-
-interface GameState {
-  monsterSouls: BigNumber
-  trainingPoints: BigNumber
-  dps: BigNumber
-  level: number
-  strength: number
+    gainMonsterSouls: (amount) => {
+      set((state) => ({
+        monsterSouls: state.monsterSouls.plus(amount),
+      }))
+    },
+    tick: (elapsedMs) => {
+      if (!Number.isFinite(elapsedMs) || elapsedMs <= 0) {
+        return
+      }
+      const boundedElapsedMs = Math.min(elapsedMs, MAX_ELAPSED_MS_PER_TICK)
+      set((state) => {
+        const simulationState = toSimulationState(state)
+        const advanced = advanceSimulation(simulationState, boundedElapsedMs)
+        return applySimulationDelta(state, advanced, boundedElapsedMs)
+      })
+    },
   strengthGrowth: number
   experience: BigNumber
   currentStage: number

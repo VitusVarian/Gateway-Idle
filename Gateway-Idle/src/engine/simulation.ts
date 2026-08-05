@@ -9,11 +9,34 @@ import {
   monsterSoulGainForStage,
 } from './economy'
 import { ECONOMY_CONFIG } from './economyConfig'
+import {
+  addRollingWindowReward,
+  advanceRollingWindow,
+  calculateRollingPerSecond,
+  createRollingWindowState,
+  type RollingWindowState,
+} from './rollingWindow'
 
 export type CombatPhase = 'battling' | 'postBattleCooldown'
+export type BossEncounterState = 'none' | 'gateActive' | 'gateCleared'
+
+const BOSS_STAGES = [10, 100, 1000] as const
+
+function isBossStage(stage: number): boolean {
+  return BOSS_STAGES.includes(stage as (typeof BOSS_STAGES)[number])
+}
+
+function bossEncounterStateForStage(stage: number, maxUnlockedStage: number): BossEncounterState {
+  if (!isBossStage(stage)) {
+    return 'none'
+  }
+
+  return maxUnlockedStage > stage ? 'gateCleared' : 'gateActive'
+}
 
 export interface SimulationState {
   phase: CombatPhase
+  bossEncounterState: BossEncounterState
   level: BigNumber
   strength: BigNumber
   strengthGrowth: BigNumber
@@ -31,14 +54,19 @@ export interface SimulationState {
   attackProgressMs: number
   phaseProgressMs: number
   totalPlayMs: number
+  rollingWindow: RollingWindowState
+  estimatedExpPerSecond: BigNumber
+  estimatedMonsterSoulsPerSecond: BigNumber
 }
 
 export function createInitialSimulationState(): SimulationState {
   const stage = 1
   const hp = monsterHitPointsForStage(stage)
+  const rollingWindow = createRollingWindowState()
 
   return {
     phase: 'battling',
+    bossEncounterState: bossEncounterStateForStage(stage, stage),
     level: new BigNumber(1),
     strength: new BigNumber(1),
     strengthGrowth: new BigNumber(1),
@@ -56,6 +84,9 @@ export function createInitialSimulationState(): SimulationState {
     attackProgressMs: 0,
     phaseProgressMs: 0,
     totalPlayMs: 0,
+    rollingWindow,
+    estimatedExpPerSecond: new BigNumber(0),
+    estimatedMonsterSoulsPerSecond: new BigNumber(0),
   }
 }
 
@@ -77,6 +108,7 @@ function spawnMonsterForCurrentStage(state: SimulationState): SimulationState {
   const hp = monsterHitPointsForStage(state.currentStage)
   return {
     ...state,
+    bossEncounterState: bossEncounterStateForStage(state.currentStage, state.maxUnlockedStage),
     monsterHpCurrent: hp,
     monsterHpMax: hp,
     attackProgressMs: 0,
@@ -86,8 +118,12 @@ function spawnMonsterForCurrentStage(state: SimulationState): SimulationState {
 function resolveMonsterDefeat(state: SimulationState): SimulationState {
   let next = { ...state }
 
-  next.experience = next.experience.plus(experienceGainForStage(next.currentStage))
-  next.monsterSouls = next.monsterSouls.plus(monsterSoulGainForStage(next.currentStage))
+  const experienceGain = experienceGainForStage(next.currentStage)
+  const monsterSoulGain = monsterSoulGainForStage(next.currentStage)
+
+  next.experience = next.experience.plus(experienceGain)
+  next.monsterSouls = next.monsterSouls.plus(monsterSoulGain)
+  next.rollingWindow = addRollingWindowReward(next.rollingWindow, experienceGain, monsterSoulGain)
   next.killsOnStage += 1
 
   if (next.killsOnStage >= next.killsRequiredOnStage) {
@@ -100,12 +136,16 @@ function resolveMonsterDefeat(state: SimulationState): SimulationState {
   }
 
   next = levelUpWithOverflow(next)
+  const rates = calculateRollingPerSecond(next.rollingWindow)
 
   return {
     ...next,
     phase: 'postBattleCooldown',
+    bossEncounterState: bossEncounterStateForStage(next.currentStage, next.maxUnlockedStage),
     phaseProgressMs: 0,
     attackProgressMs: 0,
+    estimatedExpPerSecond: rates.estimatedExpPerSecond,
+    estimatedMonsterSoulsPerSecond: rates.estimatedMonsterSoulsPerSecond,
   }
 }
 
@@ -114,17 +154,30 @@ export function advanceSimulation(state: SimulationState, elapsedMs: number): Si
     return state
   }
 
+  const normalizedMaxUnlockedStage = Math.max(1, clampStage(state.maxUnlockedStage))
+  const normalizedCurrentStage = Math.min(clampStage(state.currentStage), normalizedMaxUnlockedStage)
+
   let next = {
     ...state,
     totalPlayMs: state.totalPlayMs + elapsedMs,
-    currentStage: clampStage(state.currentStage),
-    maxUnlockedStage: Math.max(clampStage(state.maxUnlockedStage), clampStage(state.currentStage)),
+    currentStage: normalizedCurrentStage,
+    maxUnlockedStage: normalizedMaxUnlockedStage,
+    bossEncounterState: bossEncounterStateForStage(normalizedCurrentStage, normalizedMaxUnlockedStage),
   }
 
   let remainingMs = elapsedMs
   const intervalMs = attackIntervalMs()
 
   while (remainingMs > 0) {
+    const elapsedStepMs = next.phase === 'battling'
+      ? Math.min(remainingMs, intervalMs - next.attackProgressMs)
+      : Math.min(remainingMs, ECONOMY_CONFIG.postBattleCooldownMs - next.phaseProgressMs)
+
+    next = {
+      ...next,
+      rollingWindow: advanceRollingWindow(next.rollingWindow, elapsedStepMs),
+    }
+
     if (next.phase === 'battling') {
       const timeToNextAttack = intervalMs - next.attackProgressMs
       const stepMs = Math.min(remainingMs, timeToNextAttack)
@@ -162,7 +215,13 @@ export function advanceSimulation(state: SimulationState, elapsedMs: number): Si
     }
   }
 
-  return next
+  const rates = calculateRollingPerSecond(next.rollingWindow)
+
+  return {
+    ...next,
+    estimatedExpPerSecond: rates.estimatedExpPerSecond,
+    estimatedMonsterSoulsPerSecond: rates.estimatedMonsterSoulsPerSecond,
+  }
 }
 
 export function switchStage(state: SimulationState, targetStage: number): SimulationState {
@@ -174,6 +233,9 @@ export function switchStage(state: SimulationState, targetStage: number): Simula
     currentStage: unlockedTarget,
     killsOnStage: 0,
     phase: 'battling',
+    rollingWindow: createRollingWindowState(),
+    estimatedExpPerSecond: new BigNumber(0),
+    estimatedMonsterSoulsPerSecond: new BigNumber(0),
     phaseProgressMs: 0,
     attackProgressMs: 0,
   }

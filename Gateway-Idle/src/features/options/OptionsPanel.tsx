@@ -3,10 +3,10 @@ import { formatDuration } from '../../shared/lib/time/formatDuration'
 import { useGameStore } from '../../store/useGameStore'
 
 interface OptionsPanelProps {
-  onSaveNow: () => Promise<void>
-  onOpenExport: () => Promise<void>
-  onOpenImport: () => void
-  onOpenReset: () => void
+  onSaveNow?: () => Promise<void>
+  onOpenExport?: () => Promise<void>
+  onOpenImport?: () => void
+  onOpenReset?: () => void
 }
 
 export function OptionsPanel({
@@ -36,7 +36,9 @@ export function OptionsPanel({
         <button
           type="button"
           onClick={() => {
-            void onSaveNow()
+            if (onSaveNow) {
+              void onSaveNow()
+            }
           }}
           className="rounded-xl border border-amber-400/50 bg-amber-300/90 px-3 py-2 text-sm font-medium text-stone-950 transition hover:bg-amber-200"
         >
@@ -45,7 +47,9 @@ export function OptionsPanel({
         <button
           type="button"
           onClick={() => {
-            void onOpenExport()
+            if (onOpenExport) {
+              void onOpenExport()
+            }
           }}
           className="rounded-xl border border-amber-400/50 bg-amber-300/90 px-3 py-2 text-sm font-medium text-stone-950 transition hover:bg-amber-200"
         >
@@ -53,14 +57,22 @@ export function OptionsPanel({
         </button>
         <button
           type="button"
-          onClick={onOpenImport}
+          onClick={() => {
+            if (onOpenImport) {
+              onOpenImport()
+            }
+          }}
           className="rounded-xl border border-amber-400/50 bg-amber-300/90 px-3 py-2 text-sm font-medium text-stone-950 transition hover:bg-amber-200"
         >
           Import (I)
         </button>
         <button
           type="button"
-          onClick={onOpenReset}
+          onClick={() => {
+            if (onOpenReset) {
+              onOpenReset()
+            }
+          }}
           className="rounded-xl border border-red-500/50 bg-red-400/80 px-3 py-2 text-sm font-medium text-stone-950 transition hover:bg-red-300"
         >
           Full Reset

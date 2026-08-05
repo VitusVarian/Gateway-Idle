@@ -22,6 +22,12 @@ export function BattlePanel() {
   const currentStage = useGameStore((s) => s.currentStage)
   const maxUnlockedStage = useGameStore((s) => s.maxUnlockedStage)
   const manualAttack = useGameStore((s) => s.manualAttack)
+  const isBossGateStage = [10, 100, 1000].includes(currentStage)
+  const bossGateStateMessage = isBossGateStage
+    ? maxUnlockedStage > currentStage
+      ? `Boss gate ${currentStage} cleared this cycle`
+      : `Boss gate ${currentStage} active`
+    : 'Standard encounter'
 
   return (
     <article
@@ -42,6 +48,7 @@ export function BattlePanel() {
           <p className="mt-1 text-sm font-semibold text-stone-100">
             {currentStage} / {maxUnlockedStage}
           </p>
+          <p className="mt-1 text-xs text-amber-300/80">{bossGateStateMessage}</p>
         </div>
         <div>
           <p className="text-xs uppercase tracking-[0.14em] text-stone-400">Damage Per Second</p>
