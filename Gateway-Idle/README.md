@@ -110,4 +110,11 @@ Key folders:
 ## Notes
 
 - Routing uses hash-based navigation for static hosting compatibility.
-- Vite `base` is configured as `/Gateway-Incremental/` in `vite.config.ts`.
+- Vite computes its production `base` from the GitHub repository name and falls back to `/Gateway-Idle/` locally.
+
+## GitHub Pages Deployment
+
+- GitHub Actions deploys the site to GitHub Pages on every push to the `main` branch.
+- The workflow file is `.github/workflows/deploy-pages.yml`.
+- The current checked out branch in this repo is `main`, so you will need to create or rename/push a `main` branch for the deployment trigger to run.
+- The deployed site path is based on the repository name, which currently resolves to `/Gateway-Idle/`.
