@@ -1,6 +1,6 @@
 # Gateway of Darkness Idle - Stack Decisions Log
 
-Last updated: 2026-07-29
+Last updated: 2026-08-05
 
 ## Purpose
 Track confirmed technical choices, note decisions already made in planning, and stage the next decision that still needs your call.
@@ -35,6 +35,11 @@ Track confirmed technical choices, note decisions already made in planning, and 
 - Routing strategy (decided): react-router-dom.
 - URL query parameter utility strategy (decided): no dependency (native URLSearchParams + react-router-dom useSearchParams).
 - Event bus utility strategy (decided): no event-bus dependency (tiny in-app pub/sub helper).
+- Finite-state-machine utility strategy (decided): no FSM dependency (in-app state machine reducers/guards).
+- Selector memoization strategy (decided): no selector memoization dependency (Zustand built-in subscriptions + inline derived values).
+- Immutable update strategy (decided): no dependency (plain object spread in Zustand actions).
+- Crypto/hash utility strategy (decided): no dependency (native Web Crypto API — crypto.subtle).
+- Code quality tooling strategy (decided): ESLint + Prettier.
 
 ## Notes on Existing Planning Decisions
 
@@ -54,7 +59,7 @@ These are already documented in the UI/UX outline assumptions log and remain in 
 
 ## Stack Decisions Queue (Open)
 
-1. Finite-state-machine utility strategy for combat and stage-flow orchestration.
+All decisions resolved. No open items.
 
 ## Decision Closed: State Management
 
@@ -860,7 +865,7 @@ Research snapshot is current as of 2026-07-29. Re-verify package activity and si
 - Choose eventemitter3 if you need a fuller EventEmitter-style API and maximum ecosystem familiarity.
 - Choose mitt if you specifically prefer its wildcard event style and minimal API despite slower recent maintenance cadence.
 
-## Next Decision to Make: Finite-State-Machine Utility Strategy
+## Decision Closed: Finite-State-Machine Utility Strategy
 
 ### Candidate Comparison (2026-07-29 snapshot)
 
@@ -883,6 +888,10 @@ Using npm API last-week vs last-month snapshots:
 
 I would lean toward no FSM dependency for the first implementation, because your current combat and progression flow can be expressed clearly with deterministic reducer-style transitions while minimizing abstraction overhead. If flow complexity grows quickly (more concurrent substates, async guards, richer tooling needs), I would lean toward xstate next. Final call is yours.
 
+### Result
+
+Selected option: no FSM dependency (in-app state machine reducers/guards).
+
 ### Source freshness note
 
 Research snapshot is current as of 2026-07-29. Re-verify package activity and size signals if this decision is revisited later.
@@ -892,6 +901,145 @@ Research snapshot is current as of 2026-07-29. Re-verify package activity and si
 - Choose xstate if you need actor-model orchestration, richer tooling/visualization, or many interacting state machines soon.
 - Choose robot3 if you want a compact functional FSM library without xstate-level ecosystem complexity.
 - Choose @xstate/fsm only if its narrower API is a precise fit and you are comfortable with its slower recent release cadence.
+
+## Next Decision to Make: Selector Memoization Strategy
+
+### Candidate Comparison (2026-08-05 snapshot)
+
+| Candidate | Maintenance status | Bundle size | Fit notes for this idle game | License |
+|---|---|---|---|---|
+| No selector memoization dependency (Zustand built-in subscriptions + inline derived values) | No package maintenance risk. | 0 KB dependency cost. | Strong fit for current scope: Zustand's selector subscriptions already prevent unnecessary rerenders per subscriber, and inline selectors work well for simple derived values without additional memoization overhead. | N/A (app code) |
+| reselect | Active. npm 5.2.0 latest (about 2 months ago). GitHub latest commit 3 days ago. Snapshot: Issues 31, PRs 24, stars 19.0k. Weekly downloads: 42,083,738. | Bundlephobia endpoint returned 503 during research. | Mature, widely adopted input-selector memoization. Good fit if your derived selectors take multiple expensive Zustand slices as input and need reliable referential equality guarantees for deeply nested computed data. | MIT |
+| proxy-memoize | Active-moderate. npm 3.0.1 latest (about 2 years ago). GitHub latest commit 3 months ago. Snapshot: Issues 3, stars 858. Weekly downloads: 1,035,975. | Bundlephobia API: 3,150 minified, 1,468 gzip. | Proxy-based auto-tracked memoization; re-runs only if accessed properties changed. Documented Zustand integration example. Good fit for selector granularity without explicit input selector wiring. | MIT |
+| re-reselect | Active. npm 5.1.1 latest (released today). GitHub latest commit today. Snapshot: Issues 2, PRs 5, stars 1.1k. Weekly downloads: 373,056. | Bundlephobia endpoint returned 503 during research. | Extends reselect with per-argument caching for selectors called with different IDs/keys. Useful if you have per-entity selectors (for example per-upgrade-slot derived values) but adds complexity. Requires reselect as peer dependency. | MIT |
+
+### Download trend signal
+
+Using npm API last-week vs last-month snapshots:
+
+- reselect: 42,083,738 last week; 160,166,890 last month.
+- proxy-memoize: 1,035,975 last week; 4,435,833 last month.
+- re-reselect: 373,056 last week; 1,560,200 last month.
+
+### Recommendation
+
+I would lean toward no selector memoization dependency, relying on Zustand's built-in subscription model and inline selector functions, because your current derived value needs (DPS, affordability, stage lock state) are straightforward enough to stay performant without an external memoization layer. If you encounter referential equality churn from complex multi-slice derived objects, I would lean toward reselect next. Final call is yours.
+
+### Result
+
+Selected option: no selector memoization dependency (Zustand built-in subscriptions + inline derived values).
+
+### Source freshness note
+
+Research snapshot is current as of 2026-08-05. Re-verify package activity and size signals if this decision is revisited later.
+
+### What would change this recommendation
+
+- Choose reselect if derived selectors combining multiple Zustand slices begin causing excessive rerenders.
+- Choose proxy-memoize if you prefer auto-tracked property access over explicit input selectors, especially with deeply nested state.
+- Choose re-reselect if you need per-key cached selectors for entity-level derived values.
+
+## Next Decision to Make: Immutable Update Strategy
+
+### Candidate Comparison (2026-08-05 snapshot)
+
+| Candidate | Maintenance status | Bundle size | Fit notes for this idle game | License |
+|---|---|---|---|---|
+| No dependency (plain object spread / immutable patterns in Zustand actions) | No package maintenance risk. | 0 KB dependency cost. | Strong fit if state update complexity stays manageable. Zustand actions using spread syntax are explicit and easily testable. Performance depends on spread depth; can become verbose for deeply nested state slices. | N/A (app code) |
+| immer (via Zustand immer middleware) | Very active. npm 11.1.15 latest (3 weeks ago). GitHub latest commit 3 weeks ago. Snapshot: Issues 35, PRs 19, stars 29.0k. Weekly downloads: 56,552,431. | Bundlephobia API: 17,929 minified, 6,491 gzip. | Industry-standard Proxy-based draft mutation with strong Zustand middleware support. Auto-freeze enabled by default (affects runtime performance on deep writes). | MIT |
+| mutative (via zustand-mutative middleware) | Active-moderate. npm 1.3.0 latest (11 months ago). GitHub latest commit 7 months ago. Snapshot: Issues 14, PRs 10, stars 2.0k. Weekly downloads: 1,047,520. | Bundlephobia API: 21,333 minified, 7,164 gzip. | Claims 10x+ faster than Immer with auto-freeze off (default). Dedicated zustand-mutative middleware available. Smaller ecosystem than Immer but drop-in compatible API. | MIT |
+
+### Download trend signal
+
+Using npm API last-week vs last-month snapshots:
+
+- immer: 56,552,431 last week; 226,781,330 last month.
+- mutative: 1,047,520 last week; 3,888,177 last month.
+
+### Recommendation
+
+I would lean toward no dependency with plain spread patterns for first implementation, because Zustand actions stay explicit and readable at current state complexity. If action verbosity or deeply nested update patterns become a real friction point, I would lean toward immer next for its Zustand middleware integration and broad ecosystem familiarity. Final call is yours.
+
+### Result
+
+Selected option: no dependency (plain object spread in Zustand actions).
+
+### Source freshness note
+
+Research snapshot is current as of 2026-08-05. Re-verify package activity and size signals if this decision is revisited later.
+
+### What would change this recommendation
+
+- Choose immer if nested state update patterns start becoming verbose and error-prone across store slices.
+- Choose mutative if you want immer-style draft ergonomics with better runtime performance and are comfortable with a smaller ecosystem.
+
+## Next Decision to Make: Crypto/Hash Utility Strategy
+
+### Candidate Comparison (2026-08-05 snapshot)
+
+| Candidate | Maintenance status | Bundle size | Fit notes for this idle game | License |
+|---|---|---|---|---|
+| No dependency (native Web Crypto API — crypto.subtle) | Web platform standard; no package maintenance risk. | 0 KB dependency cost. | Direct fit for this project: the GDD explicitly calls for Web Crypto API and crypto.subtle for SHA-256 checksums and salt generation. Requires a secure context (HTTPS or localhost), which is standard for any deployed web app. Async API only. | N/A (platform standard) |
+| @noble/hashes | Very active. npm 2.2.0 latest (4 months ago). GitHub latest commit 11 hours ago. Snapshot: Issues 4, stars 896. Weekly downloads: 70,419,100. | Bundlephobia API: 232 bytes minified, 192 bytes gzip for the package barrel — individual sub-modules (e.g. sha2.js) are tree-shaken and compact. | Audited, zero-dependency, tree-shakeable hash library. Good backup if you need synchronous hashing or broader algorithm support in a non-secure context. Actively maintained and widely used in the security ecosystem. | MIT |
+| crypto-js | **Discontinued** by maintainer. npm 4.2.0 latest (3 years ago). GitHub latest commit 3 years ago. Snapshot: Issues 260, stars 16.4k. Weekly downloads: 19,125,555. | Bundlephobia API: 63,937 minified, 23,374 gzip (full bundle). | Explicitly self-discontinued in its README. The maintainer directs users to native Crypto instead. High issue backlog. Should not be chosen for new projects. | MIT |
+
+### Download trend signal
+
+Using npm API last-week vs last-month snapshots:
+
+- @noble/hashes: 70,419,100 last week; 281,915,463 last month.
+- crypto-js: 19,125,555 last week; 79,918,452 last month (downloads are ecosystem-driven inertia, not active adoption signal).
+
+### Recommendation
+
+I would lean strongly toward no dependency and native Web Crypto API (`crypto.subtle`) because it is exactly what the GDD specifies, requires zero bundle cost, and is available in every deployment context this game targets. crypto-js should be ruled out immediately as it is self-discontinued. @noble/hashes is the right dependency if you ever need synchronous hashing, broader algorithm support, or non-secure-context fallback behavior. Final call is yours.
+
+### Result
+
+Selected option: no dependency (native Web Crypto API — crypto.subtle).
+
+### Source freshness note
+
+Research snapshot is current as of 2026-08-05. Re-verify package activity and size signals if this decision is revisited later.
+
+### What would change this recommendation
+
+- Choose @noble/hashes if you need synchronous SHA-256 (for example in a Web Worker context without async overhead) or if you add features requiring algorithms beyond what crypto.subtle exposes.
+- Avoid crypto-js in all cases; it is discontinued.
+
+## Next Decision to Make: Code Quality Tooling Strategy
+
+### Candidate Comparison (2026-08-05 snapshot)
+
+| Candidate | Maintenance status | Bundle size | Fit notes for this idle game | License |
+|---|---|---|---|---|
+| ESLint + Prettier (separate tools) | Both very active. ESLint @typescript-eslint/eslint-plugin: 135,729,141 weekly downloads. Prettier npm 3.9.6 latest (2 weeks ago), GitHub latest commit yesterday, stars 52.2k. Weekly downloads: 129,572,220. | Dev-only; no runtime bundle impact. | The standard combination for TypeScript React projects. Maximum rule ecosystem, editor plugin coverage, and community documentation. Requires coordinating two config files and eslint-config-prettier to prevent conflicts. | MIT |
+| Biome (all-in-one linter + formatter) | Very active. npm 2.5.7 latest (yesterday). GitHub latest commit 8 hours ago. Snapshot: Issues 390, PRs 123, stars 25.5k. Weekly downloads: 12,446,047. | Dev-only; no runtime bundle impact. | Single-tool replacement for ESLint + Prettier, written in Rust. 97% Prettier compatibility. 500+ lint rules. Significantly faster than ESLint + Prettier in CI. One config file. Smaller ecosystem and fewer custom rules than ESLint. | MIT or Apache-2.0 |
+
+### Download trend signal
+
+Using npm API last-week vs last-month snapshots:
+
+- @typescript-eslint/eslint-plugin: 135,729,141 last week; 553,673,108 last month.
+- prettier: 129,572,220 last week; 502,570,554 last month.
+- @biomejs/biome: 12,446,047 last week; 47,359,235 last month.
+
+### Recommendation
+
+I would lean toward ESLint + Prettier for this project because maximum editor tooling compatibility, rule availability (including React Hooks rules and accessibility rules that are important for this project), and team/community documentation are stronger priorities than build-time speed for a solo or small-team idle game project. If CI lint time becomes a concern later, Biome is a viable migration target. Final call is yours.
+
+### Result
+
+Selected option: ESLint + Prettier.
+
+### Source freshness note
+
+Research snapshot is current as of 2026-08-05. Re-verify package activity if this decision is revisited later.
+
+### What would change this recommendation
+
+- Choose Biome if CI lint/format speed is a top priority, you want a single config file, and you are comfortable with a smaller custom-rule ecosystem.
+- Stick with ESLint + Prettier if maximum plugin availability (e.g. eslint-plugin-react-hooks, eslint-plugin-jsx-a11y) and broad tooling documentation matter most.
 
 ## Research Source Notes
 
