@@ -115,6 +115,6 @@ Key folders:
 ## GitHub Pages Deployment
 
 - GitHub Actions deploys the site to GitHub Pages on every push to the `main` branch.
-- The workflow file is `.github/workflows/deploy-pages.yml`.
-- The current checked out branch in this repo is `main`, so you will need to create or rename/push a `main` branch for the deployment trigger to run.
+- The workflow file lives at the repository root in `.github/workflows/deploy-pages.yml` and builds the app from the `Gateway-Idle/` subdirectory.
+- The current checked out branch in this repo is `main`, so pushes to `main` are the deployment trigger.
 - The deployed site path is based on the repository name, which currently resolves to `/Gateway-Idle/`.

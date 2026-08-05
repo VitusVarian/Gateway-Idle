@@ -18,6 +18,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Gateway-Idle
 
     steps:
       - name: Checkout
@@ -33,6 +36,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: Gateway-Idle/pnpm-lock.yaml
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -46,7 +50,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: Gateway-Idle/dist
 
   deploy:
     needs: build
