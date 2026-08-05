@@ -87,12 +87,14 @@ function getTrainingMilestoneStages(limit: number): number[] {
 
 function calculateTrainingMilestoneReward(highestStage: number): BigNumber {
   return getTrainingMilestoneStages(highestStage).reduce((total, _milestone, index) => {
-    const reward = Math.floor(TRAINING_BASE_REWARD + TRAINING_REWARD_COEFFICIENT * Math.sqrt(index + 1))
+    const reward = Math.floor(
+      TRAINING_BASE_REWARD + TRAINING_REWARD_COEFFICIENT * Math.sqrt(index + 1),
+    )
     return total.plus(reward)
   }, new BigNumber(0))
 }
 
-function getTrainingUpgradeCost(level: number): BigNumber {
+export function getTrainingUpgradeCost(level: number): BigNumber {
   return new BigNumber(TRAINING_UPGRADE_BASE_COST)
     .multipliedBy(new BigNumber(TRAINING_UPGRADE_COST_RATE).pow(level))
     .integerValue(BigNumber.ROUND_FLOOR)
@@ -121,15 +123,19 @@ interface GameState {
   firstRebirthMs: number | null
   firstGatewayMs: number | null
   upgrades: TrainingUpgradeState
+  weaponLevel: number
   unlockedAchievementIds: string[]
   isBossStage: boolean
   monsterHp: BigNumber
+  totalPlayMs: number
   gainMonsterSouls: (amount: BigNumber) => void
   tick: (elapsedMs: number) => void
   advanceStage: () => void
   retreatStage: () => void
   startTrainingReset: () => void
   buyTrainingUpgrade: (upgradeKey: TrainingUpgradeKey) => void
+  purchaseWeaponUpgrade: () => void
+  manualAttack: () => void
 }
 
 function unlockAchievement(state: GameState, achievementId: string): Partial<GameState> {
@@ -143,7 +149,7 @@ function unlockAchievement(state: GameState, achievementId: string): Partial<Gam
   }
 
   const rewardTrainingPoints =
-    achievement.rewardType === 'trainingPoints' ? achievement.rewardValue ?? 0 : 0
+    achievement.rewardType === 'trainingPoints' ? (achievement.rewardValue ?? 0) : 0
 
   return {
     unlockedAchievementIds: [...state.unlockedAchievementIds, achievementId],
@@ -179,9 +185,11 @@ export const useGameStore = create<GameState>((set) => ({
     experienceModifier: 0,
     monsterSoulModifier: 0,
   },
+  weaponLevel: 0,
   unlockedAchievementIds: [],
   isBossStage: false,
   monsterHp: calculateMonsterHitPoints(1),
+  totalPlayMs: 0,
   gainMonsterSouls: (amount) => {
     set((state) => ({
       monsterSouls: state.monsterSouls.plus(amount),
@@ -201,6 +209,7 @@ export const useGameStore = create<GameState>((set) => ({
       const nextState = {
         experience: state.experience.plus(new BigNumber(boundedElapsedMs).dividedBy(1000)),
         dps: new BigNumber(state.strength + state.upgrades.strengthGrowth + 1),
+        totalPlayMs: state.totalPlayMs + boundedElapsedMs,
         trainingCycleMs: state.trainingCycleMs + boundedElapsedMs,
         rebirthCycleMs: state.rebirthCycleMs + boundedElapsedMs,
         gatewayCycleMs: state.gatewayCycleMs + boundedElapsedMs,
@@ -249,7 +258,13 @@ export const useGameStore = create<GameState>((set) => ({
             ...state,
             ...nextState,
           } as GameState,
-          nextStage >= 1000 ? 'stage-1000-boss' : nextStage >= 100 ? 'stage-100-boss' : nextStage >= 10 ? 'stage-10-boss' : '',
+          nextStage >= 1000
+            ? 'stage-1000-boss'
+            : nextStage >= 100
+              ? 'stage-100-boss'
+              : nextStage >= 10
+                ? 'stage-10-boss'
+                : '',
         ),
       }
     })
@@ -319,5 +334,28 @@ export const useGameStore = create<GameState>((set) => ({
         dps: new BigNumber(state.strength + nextUpgrades.strengthGrowth + 1),
       }
     })
+  },
+  purchaseWeaponUpgrade: () => {
+    set((state) => {
+      const cost = new BigNumber(1)
+        .multipliedBy(new BigNumber(1.5).pow(state.weaponLevel))
+        .integerValue(BigNumber.ROUND_FLOOR)
+      if (state.monsterSouls.isLessThan(cost)) {
+        return {}
+      }
+      return {
+        monsterSouls: state.monsterSouls.minus(cost),
+        weaponLevel: state.weaponLevel + 1,
+        dps: state.dps.multipliedBy(1.1),
+      }
+    })
+  },
+  manualAttack: () => {
+    set((state) => ({
+      experience: state.experience.plus(state.dps),
+      monsterSouls: state.monsterSouls.plus(
+        state.dps.dividedBy(10).integerValue(BigNumber.ROUND_FLOOR),
+      ),
+    }))
   },
 }))

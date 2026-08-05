@@ -1,75 +1,113 @@
-# React + TypeScript + Vite
+# Gateway Idle
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Gateway Idle is a browser-based incremental game prototype built with React, TypeScript, and Vite.
+The current implementation focuses on a working gameplay scaffold with stage progression, combat simulation,
+training reset loops, save/load infrastructure, and automated tests.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Stage-based progression with boss milestones at stages 10, 100, and 1000
+- Core combat/economy simulation using deterministic tick advancement
+- Training reset loop with upgrade economy and milestone rewards
+- Achievement unlock tracking tied to progression events
+- Big-number-safe resources and scaling using `bignumber.js`
+- Save system with schema validation/migration, primary/backup persistence, and offline progress handling
+- Unit test coverage for economy, simulation, save codec, and store behavior
+- End-to-end smoke test coverage with Playwright
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19 + TypeScript
+- Vite 8
+- Zustand (state management)
+- Tailwind CSS (via `@tailwindcss/vite`)
+- Vitest (unit tests)
+- Playwright (E2E tests)
+- ESLint + Prettier
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 20+ (recommended)
+- pnpm 10+
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+To install pnpm globally if needed:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install -g pnpm
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Install dependencies:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+pnpm install
 ```
+
+2. Start the development server:
+
+```bash
+pnpm dev
+```
+
+3. Open the local URL shown in the terminal (usually `http://localhost:5173`).
+
+## Available Scripts
+
+- `pnpm dev`: start Vite development server
+- `pnpm build`: typecheck and produce a production build
+- `pnpm preview`: preview the production build locally
+- `pnpm typecheck`: run TypeScript project type checks
+- `pnpm lint`: run ESLint
+- `pnpm format`: check formatting with Prettier
+- `pnpm format:write`: apply Prettier formatting
+- `pnpm test`: run unit tests once (Vitest)
+- `pnpm test:watch`: run unit tests in watch mode
+- `pnpm test:e2e`: run Playwright end-to-end tests
+
+## Testing
+
+### Unit tests
+
+```bash
+pnpm test
+```
+
+### E2E tests
+
+```bash
+pnpm test:e2e
+```
+
+The Playwright config starts the app on `127.0.0.1:4173` and runs tests from `e2e/`.
+
+## Build and Preview
+
+Build for production:
+
+```bash
+pnpm build
+```
+
+Preview production output:
+
+```bash
+pnpm preview
+```
+
+## Project Structure
+
+Key folders:
+
+- `src/engine/`: economy formulas, simulation loop, progression math
+- `src/store/`: Zustand game store and selectors/slices
+- `src/services/save/`: save schema, codec, runtime save system
+- `src/features/`: UI/gameplay feature modules (battle, training, achievements, etc.)
+- `src/pages/`: page-level UI composition (`GamePage`)
+- `e2e/`: Playwright smoke tests
+- `docs/Planning/`: design and planning documents
+
+## Notes
+
+- Routing uses hash-based navigation for static hosting compatibility.
+- Vite `base` is configured as `/Gateway-Incremental/` in `vite.config.ts`.

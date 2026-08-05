@@ -24,7 +24,7 @@ export function TrainingPanel() {
       <div className="mt-4 rounded-xl border border-stone-700/40 bg-stone-950/70 p-4 text-sm text-stone-300">
         <p>Training Points: {trainingPoints.toFixed(1)}</p>
         <p>Resets: {trainingResetCount}</p>
-        <p>Total earned: {totalTrainingPointsEarned}</p>
+        <p>Total earned: {totalTrainingPointsEarned.toFixed(0)}</p>
       </div>
 
       <button
@@ -37,7 +37,10 @@ export function TrainingPanel() {
 
       <div className="mt-6 space-y-3">
         {Object.entries(upgrades).map(([key, level]) => (
-          <div key={key} className="flex items-center justify-between rounded-xl border border-stone-700/40 bg-stone-950/70 px-3 py-3">
+          <div
+            key={key}
+            className="flex items-center justify-between rounded-xl border border-stone-700/40 bg-stone-950/70 px-3 py-3"
+          >
             <div>
               <p className="text-sm font-medium text-stone-100">{key}</p>
               <p className="text-xs text-stone-400">Level {level}</p>
@@ -47,7 +50,7 @@ export function TrainingPanel() {
               onClick={() => buyTrainingUpgrade(key as keyof typeof upgrades)}
               className="rounded-lg border border-stone-600 px-3 py-2 text-xs text-stone-200"
             >
-              Buy {getTrainingUpgradeCost(key as keyof typeof upgrades).toFixed(0)}
+              Buy {getTrainingUpgradeCost(level).toFixed(0)}
             </button>
           </div>
         ))}

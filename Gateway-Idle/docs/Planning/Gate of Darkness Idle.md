@@ -5,16 +5,16 @@ More Information: Web browser based game, intended for desktop, slow paced idle 
 Core Attributes:
 `Strength` - default: 1, gain `StrengthGrowth` per `Level`, affects `BaseDamage`, 1 `Strength` = +1 `BaseDamage`
 `Level` - default: 1, gain 1 `Level` when `Experience` reaches or exceeds `ExperienceToLevel`, increments `Strength` and `Endurance`
-`Experience` - default: 0, winning a fight against a monster awards `ExperienceGain` points to `Experience` 
+`Experience` - default: 0, winning a fight against a monster awards `ExperienceGain` points to `Experience`
 
 Resources:
-`MonsterSoul` - default: 0, winning a fight against a monster awards `MonsterSoulGain` points to `MonsterSoul`, these are spent on WEAPON attributes 
+`MonsterSoul` - default: 0, winning a fight against a monster awards `MonsterSoulGain` points to `MonsterSoul`, these are spent on WEAPON attributes
 `TrainingPoint` - default: 0, this is the first type of "prestige" currency, it can be spent on `LevelingDifficulty`, `StrengthGrowth`, `EnduranceGrowth`, `ExperienceModifier`
 
 Prestige Upgradable Attributes:
 `StrengthGrowth` - default: 1, each `TrainingPoint` invested in this attribute increases the value by 1 (additive)
 `LevelingDifficulty` - default: 2.0, each `TrainingPoint` invested in this attribute decreases the value by 0.1, maximum of 10 upgrades
-`ExperienceModifier` - default: 1.0, each `TrainingPoint` invested in this attribute increases the value by 0.01 
+`ExperienceModifier` - default: 1.0, each `TrainingPoint` invested in this attribute increases the value by 0.01
 `MonsterSoulModifier` - default: 1.0, each `TrainingPoint` invested in this attribute increases the value by 0.01
 
 Weapon Attributes:
@@ -26,7 +26,7 @@ Weapon Attributes:
 
 Battle Equations / Context:
 Player attacks monster, animation shows attacks, battle runs until the monster is defeated (brought to or below 0 Hit Points) or the player chooses to fight another monster
-`DamageDealt` = FLOOR((`BaseDamage` * `DamageMultiplier`) / `MonsterDifficultyModifier`) 
+`DamageDealt` = FLOOR((`BaseDamage` * `DamageMultiplier`) / `MonsterDifficultyModifier`)
 `MonsterHitPoints` = FLOOR(`MonsterBaseHitPoints` * (`MonsterLevel` * `MonsterCoefficient` + `MonsterGrowthRate` ^ `MonsterLevel`))
 `MonsterBaseHitPoints` - default: 10
 `MonsterCoefficient` - default: 2
@@ -54,7 +54,7 @@ There will be a check box to auto advance to next stage when you clear the curre
 There will be a stage counter in the top middle
 There is an animation of the player character (left side) fighting the monster (right side). Player attack animations plays every `AttackSpeedBase` seconds and deals damage at the same time
 If a player beats a monster, award `ExperienceGain` and `MonsterSoulGain`, do level up if needed
-On the left of the player character, show a field with an "DPS: `DPSvalue`" 
+On the left of the player character, show a field with an "DPS: `DPSvalue`"
 `DPSvalue` = FLOOR(`DamageDealt` * `AttackSpeedBase`)
 On the right of the monster, show a vertical Health bar and update the values as the monster takes hits
 
@@ -70,7 +70,7 @@ Under that message, include a button "Start Training?"
 When clicked, reset the character to level 1, Strength 1, WeaponUpgradeLevel 1, Experience 0, award `TrainingPoint` based on the maximum character level reached based on the MilestoneReward
 There should be a record somewhere with a tally of the number of times a user has reset with a Training and a total number of Training Points
 After the first time a player clicks the button, the link to Training screen always displays.
-After the first time a player click the button, the Training screen displays a table at the bottom of the screen with a list of : 
+After the first time a player click the button, the Training screen displays a table at the bottom of the screen with a list of :
 Prestige Upgradeable Attributes | Current Value | Button to upgrade containing the cost in `TrainingPoint`
 
 MilestoneLevel(n) = FLOOR(FirstMilestone * MilestoneSpacing^(n-1))
@@ -101,9 +101,9 @@ Prestige mechanics:
 Need to pass a certain level to unlock the ability
 When using the particular level of prestige, reset all stats from lesser prestige types back to their default value, unless the stat specifies that it doesn't reset
 Unlock prestiges at
-    Training - level 11
-    Rebirth - level 101
-    Gateway - level 1001
+Training - level 11
+Rebirth - level 101
+Gateway - level 1001
 Bosses appear in order to unlock the prestige mechanic at level 10, level 100, and level 1000. These bosses should have double the stats of the level before it (level 10 boss has double the stats of level 9).
 Boss levels are single monster fights and cannot be reduced or increased (you will always need to fight the boss to progress)
 After a boss level, the monster attribute scaling should continue from the bosses stats (creating a step up in difficulty from the former curve)

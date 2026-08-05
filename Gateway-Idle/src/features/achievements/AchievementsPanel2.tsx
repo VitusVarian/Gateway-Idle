@@ -2,7 +2,7 @@ import { useGameStore } from '../../store/useGameStore'
 import { ACHIEVEMENTS } from './achievements2'
 
 export function AchievementsPanel() {
-  const unlockedIds = useGameStore((state) => state.achievements.unlockedIds)
+  const unlockedIds = useGameStore((state) => state.unlockedAchievementIds)
 
   return (
     <article className="rounded-2xl border border-stone-700/30 bg-stone-900/70 p-6 text-stone-200 shadow-2xl backdrop-blur-sm">

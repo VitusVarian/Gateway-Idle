@@ -145,9 +145,12 @@ function sanitizeSaveV1(input: SaveSchemaV1): SaveSchemaV1 {
       trainingCycleMs: Math.max(0, input.timers.trainingCycleMs),
       rebirthCycleMs: Math.max(0, input.timers.rebirthCycleMs),
       gatewayCycleMs: Math.max(0, input.timers.gatewayCycleMs),
-      firstTrainingMs: input.timers.firstTrainingMs === null ? null : Math.max(0, input.timers.firstTrainingMs),
-      firstRebirthMs: input.timers.firstRebirthMs === null ? null : Math.max(0, input.timers.firstRebirthMs),
-      firstGatewayMs: input.timers.firstGatewayMs === null ? null : Math.max(0, input.timers.firstGatewayMs),
+      firstTrainingMs:
+        input.timers.firstTrainingMs === null ? null : Math.max(0, input.timers.firstTrainingMs),
+      firstRebirthMs:
+        input.timers.firstRebirthMs === null ? null : Math.max(0, input.timers.firstRebirthMs),
+      firstGatewayMs:
+        input.timers.firstGatewayMs === null ? null : Math.max(0, input.timers.firstGatewayMs),
     },
   }
 }

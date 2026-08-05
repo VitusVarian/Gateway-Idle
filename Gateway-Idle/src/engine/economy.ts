@@ -11,7 +11,9 @@ export function weaponUpgradeCost(level: number): BigNumber {
 }
 
 export function damageMultiplierFromWeaponLevel(weaponLevel: number): BigNumber {
-  return new BigNumber(1).plus(new BigNumber(ECONOMY_CONFIG.weaponDamageStep).multipliedBy(weaponLevel))
+  return new BigNumber(1).plus(
+    new BigNumber(ECONOMY_CONFIG.weaponDamageStep).multipliedBy(weaponLevel),
+  )
 }
 
 function bossTierMultiplier(stage: number): BigNumber {
@@ -39,14 +41,20 @@ export function experienceToLevel(level: BigNumber): BigNumber {
     .integerValue(BigNumber.ROUND_FLOOR)
 }
 
-export function experienceGainForStage(stage: number, experienceModifier = new BigNumber(1)): BigNumber {
+export function experienceGainForStage(
+  stage: number,
+  experienceModifier = new BigNumber(1),
+): BigNumber {
   return new BigNumber(ECONOMY_CONFIG.experienceGainBase)
     .multipliedBy(stage)
     .multipliedBy(experienceModifier)
     .integerValue(BigNumber.ROUND_FLOOR)
 }
 
-export function monsterSoulGainForStage(stage: number, monsterSoulModifier = new BigNumber(1)): BigNumber {
+export function monsterSoulGainForStage(
+  stage: number,
+  monsterSoulModifier = new BigNumber(1),
+): BigNumber {
   return new BigNumber(ECONOMY_CONFIG.monsterSoulGainBase)
     .multipliedBy(stage)
     .multipliedBy(monsterSoulModifier)

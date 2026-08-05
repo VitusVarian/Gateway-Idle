@@ -3,11 +3,11 @@ import { Award, X } from 'lucide-react'
 import { useGameStore } from '../../store/useGameStore'
 
 export function AchievementsPanel() {
-  const unlockedIds = useGameStore((state) => state.achievements.unlockedIds)
-  const currentStage = useGameStore((state) => state.progression.currentStage)
-  const trainingUnlocked = useGameStore((state) => state.progression.trainingUnlocked)
-  const rebirthUnlocked = useGameStore((state) => state.progression.rebirthUnlocked)
-  const gatewayUnlocked = useGameStore((state) => state.progression.gatewayUnlocked)
+  const unlockedIds = useGameStore((state) => state.unlockedAchievementIds)
+  const currentStage = useGameStore((state) => state.currentStage)
+  const trainingUnlocked = useGameStore((state) => state.trainingUnlocked)
+  const rebirthUnlocked = useGameStore((state) => state.rebirthUnlocked)
+  const gatewayUnlocked = useGameStore((state) => state.gatewayUnlocked)
 
   const systemMilestones = [
     { id: 'stage-1', label: 'Stage 1 Reached', achieved: currentStage >= 1 },
@@ -19,13 +19,18 @@ export function AchievementsPanel() {
   const totalUnlocked = unlockedIds.length + systemMilestones.filter((item) => item.achieved).length
 
   return (
-    <article className="rounded-2xl border border-stone-700/40 bg-stone-900/70 p-4 text-stone-200" aria-label="Achievements panel">
+    <article
+      className="rounded-2xl border border-stone-700/40 bg-stone-900/70 p-4 text-stone-200"
+      aria-label="Achievements panel"
+    >
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <Award className="h-5 w-5 text-amber-300" aria-hidden="true" />
         Achievements
       </h2>
 
-      <p className="mt-3 text-sm text-stone-300">Unlocked: <span className="font-semibold text-stone-100">{totalUnlocked}</span></p>
+      <p className="mt-3 text-sm text-stone-300">
+        Unlocked: <span className="font-semibold text-stone-100">{totalUnlocked}</span>
+      </p>
 
       <Dialog.Root>
         <Dialog.Trigger asChild>
@@ -42,7 +47,11 @@ export function AchievementsPanel() {
             <div className="flex items-center justify-between">
               <Dialog.Title className="text-lg font-semibold">Achievement Catalog</Dialog.Title>
               <Dialog.Close asChild>
-                <button type="button" className="rounded-lg p-1 text-stone-400 transition hover:bg-stone-800 hover:text-stone-100" aria-label="Close achievement catalog">
+                <button
+                  type="button"
+                  className="rounded-lg p-1 text-stone-400 transition hover:bg-stone-800 hover:text-stone-100"
+                  aria-label="Close achievement catalog"
+                >
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </Dialog.Close>
@@ -50,7 +59,10 @@ export function AchievementsPanel() {
 
             <div className="mt-4 space-y-2">
               {systemMilestones.map((entry) => (
-                <div key={entry.id} className="flex items-center justify-between rounded-lg border border-stone-700/50 bg-stone-950/60 px-3 py-2 text-sm">
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between rounded-lg border border-stone-700/50 bg-stone-950/60 px-3 py-2 text-sm"
+                >
                   <span>{entry.label}</span>
                   <span className="font-semibold">{entry.achieved ? 'Unlocked' : 'Locked'}</span>
                 </div>

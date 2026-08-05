@@ -38,47 +38,47 @@ Start versioned from day one.
 
 ```ts
 type SaveSchemaV1 = {
-  schemaVersion: 1;
+  schemaVersion: 1
   meta: {
-    appVersion: string;
-    createdAt: number;
-    updatedAt: number;
-    lastTickAt: number;
-  };
+    appVersion: string
+    createdAt: number
+    updatedAt: number
+    lastTickAt: number
+  }
   resources: {
-    experience: string;
-    monsterSoul: string;
-    trainingPoints: string;
-  };
+    experience: string
+    monsterSoul: string
+    trainingPoints: string
+  }
   player: {
-    level: string;
-    strength: string;
-    strengthGrowth: string;
-  };
+    level: string
+    strength: string
+    strengthGrowth: string
+  }
   progression: {
-    currentStage: number;
-    maxUnlockedStage: number;
-    trainingUnlocked: boolean;
-    rebirthUnlocked: boolean;
-    gatewayUnlocked: boolean;
-  };
+    currentStage: number
+    maxUnlockedStage: number
+    trainingUnlocked: boolean
+    rebirthUnlocked: boolean
+    gatewayUnlocked: boolean
+  }
   upgrades: {
-    weaponLevel: number;
-    training: Record<string, number>;
-  };
+    weaponLevel: number
+    training: Record<string, number>
+  }
   achievements: {
-    unlockedIds: string[];
-  };
+    unlockedIds: string[]
+  }
   timers: {
-    totalPlayMs: number;
-    trainingCycleMs: number;
-    rebirthCycleMs: number;
-    gatewayCycleMs: number;
-    firstTrainingMs: number | null;
-    firstRebirthMs: number | null;
-    firstGatewayMs: number | null;
-  };
-};
+    totalPlayMs: number
+    trainingCycleMs: number
+    rebirthCycleMs: number
+    gatewayCycleMs: number
+    firstTrainingMs: number | null
+    firstRebirthMs: number | null
+    firstGatewayMs: number | null
+  }
+}
 ```
 
 Serialization rules:
@@ -92,6 +92,7 @@ Serialization rules:
 ## Milestone sequence
 
 ## Milestone 0: Project scaffold and stack setup
+
 - [x] Initialize Vite + React + TypeScript project with pnpm
 - [x] Install finalized dependencies from the stack decisions log
 - [x] Configure ESLint + Prettier, Vitest, and Playwright baseline scripts
@@ -99,18 +100,21 @@ Serialization rules:
 - [x] Confirm app boots and basic CI/local scripts run
 
 ## Milestone 1: Bare core loop
+
 - [x] Implement one resource and one generator loop in memory
 - [x] Add a manual increment action to verify state changes
 - [x] Render minimal UI to display changing values
 - [x] Keep milestone in-memory only (no persistence yet)
 
 ## Milestone 2: Tick loop and scaling
+
 - [x] Add deterministic tick/passive generation loop
 - [x] Add baseline cost scaling for upgrades/progression
 - [x] Wire stage progression basics and basic combat/state transitions
 - [x] Confirm deterministic behavior under repeated ticks
 
 ## Milestone 3: Save/load and offline-resume behavior
+
 - [x] Implement local save/load using SaveSchemaV1 and idb-keyval
 - [x] Add schema validation + migration entrypoint for save loading
 - [x] Implement export/import with checksum validation
@@ -118,6 +122,7 @@ Serialization rules:
 - [x] Add corruption handling and latest-valid fallback path
 
 ## Milestone 4: Full UI implementation
+
 - [x] Build three-row shell with always-visible battle area
 - [x] Implement Armory, Achievements, Options, and Training panels
 - [x] Integrate dialogs, toasts, icons, and keyboard shortcuts
@@ -125,12 +130,14 @@ Serialization rules:
 - [x] Enforce player-facing label conventions (Monster Souls, Training Points)
 
 ## Milestone 5: Secondary systems from GDD
+
 - [x] Implement Training reset system end-to-end
 - [x] Implement boss gates at stages 10, 100, and 1000
 - [x] Implement achievement catalog, unlock checks, and reward typing
 - [x] Keep Rebirth and Gateway as locked placeholders with correct state/timer scaffolding
 
 ## Milestone 6: Polish and hardening
+
 - [x] Finalize large-number formatting consistency and readability
 - [x] Run accessibility pass (focus, keyboard flow, ARIA feedback, contrast)
 - [x] Run performance pass for high-frequency updates and selector/render isolation

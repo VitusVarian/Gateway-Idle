@@ -15,12 +15,12 @@ function ResourceRow({ label, value, rate }: { label: string; value: string; rat
 }
 
 export function BattlePanel() {
-  const experience = useGameStore((s) => s.resources.experience)
-  const monsterSouls = useGameStore((s) => s.resources.monsterSoul)
-  const trainingPoints = useGameStore((s) => s.resources.trainingPoints)
+  const experience = useGameStore((s) => s.experience)
+  const monsterSouls = useGameStore((s) => s.monsterSouls)
+  const trainingPoints = useGameStore((s) => s.trainingPoints)
   const dps = useGameStore((s) => s.dps)
-  const currentStage = useGameStore((s) => s.progression.currentStage)
-  const maxUnlockedStage = useGameStore((s) => s.progression.maxUnlockedStage)
+  const currentStage = useGameStore((s) => s.currentStage)
+  const maxUnlockedStage = useGameStore((s) => s.maxUnlockedStage)
   const manualAttack = useGameStore((s) => s.manualAttack)
 
   return (
@@ -60,11 +60,7 @@ export function BattlePanel() {
       </div>
 
       <div className="divide-y divide-stone-700/30">
-        <ResourceRow
-          label="Experience"
-          value={formatNumber(experience)}
-          rate={formatNumber(dps)}
-        />
+        <ResourceRow label="Experience" value={formatNumber(experience)} rate={formatNumber(dps)} />
         <ResourceRow
           label="Monster Souls"
           value={formatNumber(monsterSouls)}

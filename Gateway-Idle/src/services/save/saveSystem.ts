@@ -47,7 +47,9 @@ async function persistSave(payload: SaveSchemaV1): Promise<void> {
   await writeBackupSave(payload)
 }
 
-async function loadWithFallback(now: number): Promise<{ save: SaveSchemaV1; source: 'primary' | 'backup' | 'default' }> {
+async function loadWithFallback(
+  now: number,
+): Promise<{ save: SaveSchemaV1; source: 'primary' | 'backup' | 'default' }> {
   try {
     const primary = await loadPrimarySave<unknown>()
     if (primary !== null) {

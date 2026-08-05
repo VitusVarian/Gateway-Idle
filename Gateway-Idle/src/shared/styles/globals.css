@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --bg-900: #080b0f;
@@ -23,5 +23,6 @@ body {
     radial-gradient(circle at 15% 20%, rgba(245, 176, 65, 0.16), transparent 35%),
     radial-gradient(circle at 85% 0%, rgba(80, 140, 255, 0.15), transparent 30%),
     linear-gradient(180deg, var(--bg-800) 0%, var(--bg-900) 100%);
-  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif;
+  font-family:
+    'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 }

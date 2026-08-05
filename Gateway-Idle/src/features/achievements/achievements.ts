@@ -1,4 +1,5 @@
-export type AchievementRewardType = 'none' | 'trainingPoints' | 'strengthGrowth' | 'experienceModifier'
+export type AchievementRewardType =
+  'none' | 'trainingPoints' | 'strengthGrowth' | 'experienceModifier'
 
 export interface AchievementDefinition {
   id: string

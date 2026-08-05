@@ -94,7 +94,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       monsterSouls: new BigNumber(0),
       trainingPoints: nextTrainingPoints,
       trainingResetCount: nextTrainingResetCount,
-      totalTrainingPointsEarned: state.totalTrainingPointsEarned + awarded.toNumber(),
+      totalTrainingPointsEarned: state.totalTrainingPointsEarned + awarded,
       trainingUnlocked: true,
       trainingCycleMs: 0,
       dps: new BigNumber(1 + state.upgrades.experienceModifier),
@@ -121,8 +121,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         ...state.upgrades,
         [key]: state.upgrades[key] + 1,
       },
-      strengthGrowth: key === 'strengthGrowth' ? 1 + state.upgrades.strengthGrowth + 1 : state.strengthGrowth,
-      dps: new BigNumber(1 + state.upgrades.experienceModifier + (key === 'experienceModifier' ? 1 : 0)),
+      strengthGrowth:
+        key === 'strengthGrowth' ? 1 + state.upgrades.strengthGrowth + 1 : state.strengthGrowth,
+      dps: new BigNumber(
+        1 + state.upgrades.experienceModifier + (key === 'experienceModifier' ? 1 : 0),
+      ),
     }))
   },
   unlockAchievement: (id) => {
@@ -162,7 +165,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (elapsedMs <= 0) return
 
     set((state) => {
-      const experienceGain = (elapsedMs / 1000) * baseExperienceRate * (1 + state.upgrades.experienceModifier * 0.2)
+      const experienceGain =
+        (elapsedMs / 1000) * baseExperienceRate * (1 + state.upgrades.experienceModifier * 0.2)
       const strengthGain = (elapsedMs / 1000) * (state.strengthGrowth * 0.2)
       const monsterSoulGain = (elapsedMs / 1000) * (0.1 + state.upgrades.monsterSoulModifier * 0.05)
       const nextExperience = state.experience + experienceGain
@@ -174,7 +178,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         strength: Math.max(state.strength, Math.floor(baseStrength + strengthGain)),
         monsterSouls: state.monsterSouls.plus(monsterSoulGain),
         trainingCycleMs: state.trainingCycleMs + elapsedMs,
-        dps: new BigNumber(Math.max(1, 1 + state.strengthGrowth + state.upgrades.experienceModifier * 0.25)),
+        dps: new BigNumber(
+          Math.max(1, 1 + state.strengthGrowth + state.upgrades.experienceModifier * 0.25),
+        ),
       }
     })
   },
@@ -188,5 +194,7 @@ export function getTrainingUpgradeCost(key: keyof UpgradeLevels): BigNumber {
 }
 
 export function getAchievementProgress(achievements: AchievementState): string[] {
-  return ACHIEVEMENTS.map((achievement) => achievement.id).filter((id) => achievements.unlockedIds.includes(id))
+  return ACHIEVEMENTS.map((achievement) => achievement.id).filter((id) =>
+    achievements.unlockedIds.includes(id),
+  )
 }

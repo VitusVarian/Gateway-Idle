@@ -4,8 +4,8 @@ import { formatNumber } from '../../shared/lib/formatting/formatNumber'
 import { useGameStore } from '../../store/useGameStore'
 
 export function ArmoryPanel() {
-  const monsterSouls = useGameStore((state) => state.resources.monsterSoul)
-  const weaponLevel = useGameStore((state) => state.upgrades.weaponLevel)
+  const monsterSouls = useGameStore((state) => state.monsterSouls)
+  const weaponLevel = useGameStore((state) => state.weaponLevel)
   const dps = useGameStore((state) => state.dps)
   const purchaseWeaponUpgrade = useGameStore((state) => state.purchaseWeaponUpgrade)
 
@@ -13,7 +13,10 @@ export function ArmoryPanel() {
   const canPurchase = canAfford(upgradeCost, monsterSouls)
 
   return (
-    <article className="rounded-2xl border border-stone-700/40 bg-stone-900/70 p-4 text-stone-200" aria-label="Armory panel">
+    <article
+      className="rounded-2xl border border-stone-700/40 bg-stone-900/70 p-4 text-stone-200"
+      aria-label="Armory panel"
+    >
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <Hammer className="h-5 w-5 text-amber-300" aria-hidden="true" />
         Armory
@@ -30,7 +33,9 @@ export function ArmoryPanel() {
         </p>
         <p className="flex items-center justify-between gap-4">
           <span className="text-stone-300">Upgrade Cost</span>
-          <span className="font-semibold text-stone-100">{formatNumber(upgradeCost)} Monster Souls</span>
+          <span className="font-semibold text-stone-100">
+            {formatNumber(upgradeCost)} Monster Souls
+          </span>
         </p>
       </div>
 

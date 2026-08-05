@@ -8,8 +8,7 @@ export function createEventBus<TEvents extends EventMap>() {
     event: TKey,
     listener: Listener<TEvents[TKey]>,
   ): () => void {
-    const eventListeners =
-      listeners.get(event) ?? new Set<Listener<TEvents[keyof TEvents]>>()
+    const eventListeners = listeners.get(event) ?? new Set<Listener<TEvents[keyof TEvents]>>()
 
     eventListeners.add(listener as Listener<TEvents[keyof TEvents]>)
     listeners.set(event, eventListeners)

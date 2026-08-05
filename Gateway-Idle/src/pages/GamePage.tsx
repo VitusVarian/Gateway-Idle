@@ -22,10 +22,12 @@ function HeaderStats() {
   return (
     <header className="rounded-2xl border border-stone-700/30 bg-stone-950/60 p-6 shadow-2xl backdrop-blur-sm">
       <p className="text-xs uppercase tracking-[0.2em] text-amber-300/80">Gateway of Darkness</p>
-      <h1 className="mt-3 text-3xl font-semibold text-stone-100 sm:text-4xl">Idle Prototype Scaffold</h1>
+      <h1 className="mt-3 text-3xl font-semibold text-stone-100 sm:text-4xl">
+        Idle Prototype Scaffold
+      </h1>
       <p className="mt-3 text-stone-300/85" aria-live="polite" aria-atomic="true">
-        Monster Souls: {formatNumber(throttledSouls)} | Training Points: {formatNumber(throttledTrainingPoints)} |
-        DPS: {formatNumber(throttledDps)}
+        Monster Souls: {formatNumber(throttledSouls)} | Training Points:{' '}
+        {formatNumber(throttledTrainingPoints)} | DPS: {formatNumber(throttledDps)}
       </p>
     </header>
   )
@@ -43,15 +45,28 @@ function BattlePanel() {
   return (
     <article className="rounded-2xl border border-stone-700/30 bg-stone-900/70 p-4 text-stone-200">
       <h2 className="text-lg font-medium">Battle</h2>
-      <p className="mt-2 text-sm text-stone-300">Stage {currentStage} / unlocked to {maxUnlockedStage}</p>
+      <p className="mt-2 text-sm text-stone-300">
+        Stage {currentStage} / unlocked to {maxUnlockedStage}
+      </p>
       <p className="mt-2 text-sm text-stone-300" aria-live="polite">
-        {isBossStage ? 'Boss gate active' : 'Standard stage'} | Monster HP: {formatNumber(monsterHp)}
+        {isBossStage ? 'Boss gate active' : 'Standard stage'} | Monster HP:{' '}
+        {formatNumber(monsterHp)}
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button type="button" onClick={retreatStage} className={ACTION_BUTTON_CLASS} aria-label="Move to previous stage">
+        <button
+          type="button"
+          onClick={retreatStage}
+          className={ACTION_BUTTON_CLASS}
+          aria-label="Move to previous stage"
+        >
           Back Stage
         </button>
-        <button type="button" onClick={advanceStage} className={ACTION_BUTTON_CLASS} aria-label="Advance to next stage">
+        <button
+          type="button"
+          onClick={advanceStage}
+          className={ACTION_BUTTON_CLASS}
+          aria-label="Advance to next stage"
+        >
           Advance Stage
         </button>
         <button
@@ -85,8 +100,8 @@ function TrainingPanel() {
           : 'Training unlocks at the stage 10 boss.'}
       </p>
       <p className="mt-2 text-sm text-stone-300" aria-live="polite">
-        Training Points: {formatNumber(trainingPoints)} | Resets: {trainingResetCount} | Lifetime earned:{' '}
-        {formatNumber(totalTrainingPointsEarned)}
+        Training Points: {formatNumber(trainingPoints)} | Resets: {trainingResetCount} | Lifetime
+        earned: {formatNumber(totalTrainingPointsEarned)}
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -98,7 +113,11 @@ function TrainingPanel() {
         >
           Start Training Reset
         </button>
-        <button type="button" onClick={() => buyTrainingUpgrade('strengthGrowth')} className={ACTION_BUTTON_CLASS}>
+        <button
+          type="button"
+          onClick={() => buyTrainingUpgrade('strengthGrowth')}
+          className={ACTION_BUTTON_CLASS}
+        >
           Strength Growth Lv. {upgrades.strengthGrowth}
         </button>
         <button
@@ -137,8 +156,8 @@ function ProgressionPanel() {
         Gateway: {gatewayUnlocked ? 'placeholder unlocked' : 'locked until stage 1000'}
       </p>
       <p className="mt-2 text-sm text-stone-300" aria-live="polite">
-        Timers: Training {Math.floor(trainingCycleMs / 1000)}s | Rebirth {Math.floor(rebirthCycleMs / 1000)}s |
-        Gateway {Math.floor(gatewayCycleMs / 1000)}s
+        Timers: Training {Math.floor(trainingCycleMs / 1000)}s | Rebirth{' '}
+        {Math.floor(rebirthCycleMs / 1000)}s | Gateway {Math.floor(gatewayCycleMs / 1000)}s
       </p>
     </article>
   )
@@ -149,7 +168,10 @@ function AchievementsPanel() {
   const unlockedSet = useMemo(() => new Set(unlockedAchievementIds), [unlockedAchievementIds])
 
   return (
-    <section className="mt-6 rounded-2xl border border-stone-700/30 bg-stone-900/70 p-4 text-stone-200" aria-live="polite">
+    <section
+      className="mt-6 rounded-2xl border border-stone-700/30 bg-stone-900/70 p-4 text-stone-200"
+      aria-live="polite"
+    >
       <h2 className="text-lg font-medium">Achievements</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {ACHIEVEMENT_CATALOG.map((achievement) => {
@@ -159,7 +181,9 @@ function AchievementsPanel() {
             <article
               key={achievement.id}
               className={`rounded-xl border p-3 ${
-                unlocked ? 'border-amber-400/40 bg-amber-300/10' : 'border-stone-700/40 bg-stone-950/40'
+                unlocked
+                  ? 'border-amber-400/40 bg-amber-300/10'
+                  : 'border-stone-700/40 bg-stone-950/40'
               }`}
             >
               <h3 className="text-sm font-semibold text-stone-100">{achievement.title}</h3>
@@ -193,7 +217,10 @@ export function GamePage() {
     <main className="mx-auto min-h-screen max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
       <HeaderStats />
 
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Core game panels">
+      <section
+        className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        aria-label="Core game panels"
+      >
         <BattlePanel />
         <TrainingPanel />
         <ProgressionPanel />

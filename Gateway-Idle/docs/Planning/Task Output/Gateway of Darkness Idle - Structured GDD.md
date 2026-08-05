@@ -1,11 +1,13 @@
 # Gateway of Darkness Idle - Structured Game Design Document
 
 ## Core Concept & Theme
+
 - **Premise:** A slow-paced, desktop web idle game with RPG progression.
 - **Player fantasy:** Repeatedly fight monsters, grow stronger through levels and weapon upgrades, then reset progress through prestige systems to accelerate future runs.
 - **Long-term hook:** Multiple prestige layers (Training first, Rebirth and Gateway later) with escalating milestones and boss gates.
 
 ## Core Loop
+
 1. Fight monsters in the Battle screen.
 2. Deal periodic attack damage based on player stats and weapon multiplier.
 3. Defeat monsters to earn Experience and MonsterSoul.
@@ -16,6 +18,7 @@
 8. Repeat the loop faster/stronger each cycle.
 
 ### Pacing Targets (Initial Balancing)
+
 - New player target time to first Training reset: about 20 minutes.
 - After first Training reset, target cycle times are:
   - Cycle 2: about 10 minutes.
@@ -24,6 +27,7 @@
 - These are balancing targets, not strict guarantees; tuning should keep typical play near these ranges.
 
 ### Battle Flow
+
 - Combat runs until the current monster reaches 0 HP or below, or until the player chooses a different monster/stage.
 - After each monster battle, there is a 3-second cooldown before the next battle begins.
 - Manual stage changes bypass post-battle cooldown and start the new stage immediately.
@@ -33,7 +37,9 @@
 - Optional auto-advance can move the player to the next stage after clearing the current one.
 
 ## Resources & Currencies
+
 ### Character Stats / Progress Values
+
 - `Level` (default: 1)
   - Increases when `Experience >= ExperienceToLevel`.
   - On level-up: increments `Strength` (as written in source).
@@ -45,21 +51,26 @@
   - Excess carries over through possible multi-level gains.
 
 ### Combat/Upgrade Resource
+
 - `MonsterSoul` (default: 0)
   - Awarded via `MonsterSoulGain` on monster defeat.
   - Spent on weapon upgrades in Armory.
 
 ### Prestige Currency
+
 - `TrainingPoint` (default: 0)
   - Earned from Training reset milestone reward logic.
   - Spent on prestige-upgradable attributes.
 
 ## Progression Systems
+
 ### Leveling
+
 - `ExperienceToLevel = FLOOR(20 * Level^LevelingDifficulty)`
 - If a single reward grants enough Experience for multiple levels, apply all levels sequentially and keep overflow.
 
 ### Weapon Progression (Armory)
+
 - `WeaponUpgradeLevel` (default: 0)
 - `DamageMultiplier` (default: 1.0)
   - Increases by +0.1 per weapon upgrade level.
@@ -71,6 +82,7 @@
   - Otherwise show warning: "Not enough souls!"
 
 ### Combat / Reward Formulas
+
 - `BaseDamage = Strength` (current implementation).
 - Future intent: `BaseDamage` may later become a sum of Strength plus additional modifiers.
 - `DamageDealt = FLOOR(BaseDamage * DamageMultiplier)`
@@ -93,6 +105,7 @@
 - This bucketed approach avoids per-kill list scans and remains performant at high kill rates.
 
 ### Stage Progression and Boss Gates
+
 - Standard stages require 10 monster defeats at stage level `x` to unlock stage `x+1`.
 - Boss stages at levels 10, 100, and 1000 unlock prestige tiers.
 - A player can never advance beyond the current stage until that stage's required kills are completed in the current prestige cycle.
@@ -112,7 +125,9 @@
   - Leaving a stage clears that stage's active kill counter; returning to that stage starts from 0 kills.
 
 ### Prestige System
+
 #### Unlock Levels
+
 - Training unlocks after beating the boss at level 10.
 - Rebirth unlocks after beating the boss at level 100.
 - Gateway unlocks after beating the boss at level 1000.
@@ -121,26 +136,29 @@
 #### Prestige Reset Rule (General)
 
 #### Forward-Compatible Prestige Reset Matrix (Draft)
+
 The matrix below is a planning template so future tiers can be added without redefining reset semantics.
 
-| State Domain | Training Reset | Rebirth Reset (draft) | Gateway Reset (draft) |
-|---|---|---|---|
-| Run combat state (`currentStage`, `maxUnlockedStage`, `killsOnStage`, active combat/cooldown target) | Reset to defaults | Reset to defaults | Reset to defaults |
-| Run character state (`level`, `strength`, `experience`) | Reset to defaults | Reset to defaults | Reset to defaults |
-| Run economy state (`monsterSoul`, `weaponUpgradeLevel`, `damageMultiplier`) | Reset to defaults | Reset to defaults | Reset to defaults |
-| Run telemetry (`killRateWindow`, `trainingCycleMs`) | Reset to defaults | Reset to defaults | Reset to defaults |
-| Training currency balance (`trainingPoints`) | Persist (spent/unspent unchanged) | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
-| Training upgrades (`strengthGrowthLevel`, `levelingDifficultyLevel`, `experienceModifierLevel`, `monsterSoulModifierLevel`) | Persist | Reset to default unless marked non-resetting later | Reset to default unless marked non-resetting later |
-| Training lifetime counters (`trainingResetCount`, `totalTrainingPointsEarned`) | Persist | Persist (lifetime analytics; non-currency, non-power) | Persist (lifetime analytics; non-currency, non-power) |
-| Achievement unlock flags | Persist | Persist by default | Persist by default |
-| Save metadata (`version`, `schema`, backup slots) | Persist | Persist | Persist |
+| State Domain                                                                                                                | Training Reset                    | Rebirth Reset (draft)                                 | Gateway Reset (draft)                                 |
+| --------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ----------------------------------------------------- | ----------------------------------------------------- |
+| Run combat state (`currentStage`, `maxUnlockedStage`, `killsOnStage`, active combat/cooldown target)                        | Reset to defaults                 | Reset to defaults                                     | Reset to defaults                                     |
+| Run character state (`level`, `strength`, `experience`)                                                                     | Reset to defaults                 | Reset to defaults                                     | Reset to defaults                                     |
+| Run economy state (`monsterSoul`, `weaponUpgradeLevel`, `damageMultiplier`)                                                 | Reset to defaults                 | Reset to defaults                                     | Reset to defaults                                     |
+| Run telemetry (`killRateWindow`, `trainingCycleMs`)                                                                         | Reset to defaults                 | Reset to defaults                                     | Reset to defaults                                     |
+| Training currency balance (`trainingPoints`)                                                                                | Persist (spent/unspent unchanged) | Reset to default unless marked non-resetting later    | Reset to default unless marked non-resetting later    |
+| Training upgrades (`strengthGrowthLevel`, `levelingDifficultyLevel`, `experienceModifierLevel`, `monsterSoulModifierLevel`) | Persist                           | Reset to default unless marked non-resetting later    | Reset to default unless marked non-resetting later    |
+| Training lifetime counters (`trainingResetCount`, `totalTrainingPointsEarned`)                                              | Persist                           | Persist (lifetime analytics; non-currency, non-power) | Persist (lifetime analytics; non-currency, non-power) |
+| Achievement unlock flags                                                                                                    | Persist                           | Persist by default                                    | Persist by default                                    |
+| Save metadata (`version`, `schema`, backup slots)                                                                           | Persist                           | Persist                                               | Persist                                               |
 
 Draft rule intent:
+
 - Any tier reset clears run-layer progression.
 - Higher prestige tiers should define explicitly which lower-tier meta fields, if any, are non-resetting exceptions.
 - If no exception is defined, apply the strict lower-tier reset rule.
 
 #### Training Screen and Training Reset
+
 - Training screen includes a warning that training resets battle progress and returns player to base stats.
 - On Training reset click:
   - Reset the following fields to default:
@@ -170,6 +188,7 @@ Draft rule intent:
     - Columns: Prestige Upgradable Attribute | Current Value | Upgrade Button with TrainingPoint cost.
 
 #### Training Milestone Formulas
+
 - `MilestoneLevel(n) = FLOOR(FirstMilestone * MilestoneSpacing^(n-1))`
 - `FirstMilestone = 10`
 - `MilestoneSpacing = 1.6` (source contains typo variant "MilestoneSpaceing")
@@ -182,6 +201,7 @@ Draft rule intent:
   - `CycleTrainingPointsAwarded = SUM(MilestoneReward(n)) for all n where MilestoneLevel(n) <= HighestStageReachedThisCycle`
 
 #### Training Prestige-Upgradable Attributes
+
 - `StrengthGrowth` (default: 1)
   - +1 per TrainingPoint investment.
 - `LevelingDifficulty` (default: 2.0)
@@ -198,16 +218,20 @@ Draft rule intent:
   - Each attribute tracks its own `attributeUpgradeLevel` (default: 0).
 
 ## Idle/Offline Mechanics
+
 - Autosave should occur locally every 5 minutes.
 - No offline progression is intended.
 - Game simulation is real-time while the game is running, including when in background.
 
 ## Automation
+
 - Auto-advance checkbox: when enabled, automatically move to next stage after current stage clear requirement is met.
 - Combat itself appears time-based/automatic once battle is active (attacks occur every `AttackSpeedBase` seconds).
 
 ## Content & Milestones
+
 ### Screens / Areas
+
 - Battle (middle row main area).
 - Armory (navigation).
 - Achievements (navigation).
@@ -215,6 +239,7 @@ Draft rule intent:
 - Training (locked at start; unlock behavior defined above).
 
 ### Achievements
+
 - Grid layout, 5 columns wide.
 - Each achievement displays an image plus unlock-condition description.
 - Achievement rewards are mixed by design:
@@ -226,7 +251,9 @@ Draft rule intent:
   - Unlocked = colorful.
 
 ### Time Tracking Requirements
+
 Track and display/store:
+
 - Overall play time.
 - Time in current Training cycle.
 - Time in current Rebirth cycle.
@@ -237,22 +264,27 @@ Track and display/store:
 - Time tracking mode: real-time (foreground and background while running).
 
 ### Large Number Handling
+
 - Game is expected to reach very large values.
 - Use a performant big-number library for calculations and display.
 
 ## UI/UX Notes
+
 ### Layout
+
 - Three-row layout:
   - Top row: small navigation bar.
   - Middle row: Battle screen.
   - Bottom row: content panel for selected navigation section.
 
 ### Navigation Defaults
+
 - Initially visible links include Armory, Achievements, and Options.
 - Achievements appears to the left of Options.
 - Training link appears later based on unlock rules.
 
 ### Battle UI Elements
+
 - Stage counter centered at top.
 - Back/advance arrows for stage navigation.
 - Advance arrow hidden when stage-clear requirement not met.
@@ -263,18 +295,21 @@ Track and display/store:
 - Vertical monster health bar near monster, updates as damage is dealt.
 
 ### Player-Facing Naming Convention
+
 - Internal identifiers in formulas/state may remain compact (`MonsterSoul`, `TrainingPoint`).
 - Player-facing labels must use spaced words and pluralized forms where appropriate:
   - `Monster Souls`
   - `Training Points`
 
 ### Armory UI Elements
+
 - Weapon image on left.
 - To the right: current DamageMultiplier and current WeaponUpgradeLevel.
 - Upgrade button label format: `Upgrade: <WeaponUpgradeCost>`.
 - On insufficient currency, show: "Not enough souls!"
 
 ### Options UI Elements
+
 - Save button.
 - Load button.
 - Full Reset button with explicit danger confirmation.
@@ -282,6 +317,7 @@ Track and display/store:
 - Load input: pasted base64 string with confirmation step.
 
 ### Save Integrity / Anti-Tamper Direction
+
 - Chosen approach: local-only tamper-evident saves with corruption detection, salted Base64 export/import bundles, and rolling backups.
 - Security reality (explicit): without a server-held secret, true anti-tamper is not achievable against a determined player in a client-only game.
 - Primary goals:
@@ -309,13 +345,16 @@ Track and display/store:
   - Web Crypto requires a secure context; if unavailable, keep checksum verification and backups with fallback salt generation strategy.
 
 ## Out of Scope / Rejected Ideas
+
 - Rebirth and Gateway prestige attributes/effects are intentionally not yet defined and are deferred to a future design pass.
 - Endurance and EnduranceGrowth are removed from the current design.
 - MonsterDifficultyModifier is removed from the current design.
 - Progression is intentionally endless (no final win-state).
 
 ## Contradictions & Ambiguities Detected
+
 - No unresolved contradictions currently in the Training-layer design.
 
 ## Open Questions
+
 - No unresolved open questions currently tracked in this document.
