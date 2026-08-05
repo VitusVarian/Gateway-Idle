@@ -1,5 +1,5 @@
 ---
-name: Economy Designer
+name: economy-designer
 description: Design and implement idle-game progression math — cost curves, resource generation rates, prestige/rebirth formulas, and big-number handling.
 tools: ['search/codebase', 'search/usages', 'edit', 'web/fetch']
 handoffs:

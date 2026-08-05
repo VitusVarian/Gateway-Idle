@@ -1,5 +1,5 @@
 ---
-name: Save System Engineer
+name: save-system-engineer
 description: Own localStorage persistence, save schema versioning/migration, and offline-progress calculation on load.
 tools: ['search/codebase', 'search/usages', 'edit']
 handoffs:

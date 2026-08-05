@@ -1,5 +1,5 @@
 ---
-name: Design Auditor
+name: design-auditor
 description: Review a game design document and UI design document together for completeness, internal consistency, and unspecified systems before any implementation planning begins.
 tools: ['web/fetch','edit', 'search/codebase', 'search/usages']
 handoffs:

@@ -1,7 +1,7 @@
 ---
-name: QA Tester
+name: qa-tester
 description: Write and run tests for idle-game logic — economy math, save/load correctness, and offline-progress edge cases.
-tools: ['search/codebase', 'search/usages', 'edit', 'read/terminalLastCommand']
+tools: ['search/codebase', 'search/usages', 'edit', 'execute/runInTerminal', 'execute/getTerminalOutput', 'read/terminalLastCommand']
 ---
 # QA instructions
 

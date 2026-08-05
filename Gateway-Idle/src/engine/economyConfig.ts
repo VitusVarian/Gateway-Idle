@@ -1,0 +1,15 @@
+export const ECONOMY_CONFIG = {
+  weaponBaseCost: 50,
+  weaponCostGrowthRate: 1.1,
+  weaponDamageStep: 0.1,
+  monsterBaseHitPoints: 10,
+  monsterCoefficient: 2,
+  monsterGrowthRate: 1.08,
+  attackSpeedBaseSeconds: 0.8,
+  postBattleCooldownMs: 3000,
+  killsRequiredPerStage: 10,
+  experienceGainBase: 10,
+  monsterSoulGainBase: 10,
+  experienceToLevelBase: 20,
+  levelingDifficulty: 2,
+} as const

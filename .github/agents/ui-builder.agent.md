@@ -1,7 +1,7 @@
 ---
-name: React UI Builder
+name: ui-builder
 description: Build and update React components for the idle game UI — resource displays, upgrade panels, prestige screens, notifications.
-tools: ['search/codebase', 'search/usages', 'edit', 'runCommands']
+tools: ['search/codebase', 'search/usages', 'edit', 'execute/getTerminalOutput','execute/runInTerminal','read/terminalLastCommand','read/terminalSelection']
 handoffs:
   - label: Write Component Tests
     agent: qa-tester

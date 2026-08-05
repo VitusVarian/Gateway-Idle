@@ -1,0 +1,33 @@
+export interface AchievementDefinition {
+  id: string
+  title: string
+  description: string
+  rewardType: 'none' | 'training-point' | 'monster-soul' | 'boss-gate'
+}
+
+export const ACHIEVEMENTS: AchievementDefinition[] = [
+  {
+    id: 'first-victory',
+    title: 'First Victory',
+    description: 'Clear your first stage.',
+    rewardType: 'none',
+  },
+  {
+    id: 'stage-10-boss',
+    title: 'Stage 10 Boss',
+    description: 'Unlock the first boss gate at stage 10.',
+    rewardType: 'boss-gate',
+  },
+  {
+    id: 'stage-100-boss',
+    title: 'Stage 100 Boss',
+    description: 'Unlock the stage 100 boss gate.',
+    rewardType: 'boss-gate',
+  },
+  {
+    id: 'training-reset',
+    title: 'Training Reset',
+    description: 'Complete your first training reset.',
+    rewardType: 'training-point',
+  },
+]

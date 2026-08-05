@@ -1,5 +1,5 @@
 ---
-name: Idle-Loop Performance
+name: idle-loop-performance
 description: Review and optimize the core game tick loop and its interaction with React rendering, background tabs, and long play sessions.
 tools: ['search/codebase', 'search/usages', 'edit']
 ---

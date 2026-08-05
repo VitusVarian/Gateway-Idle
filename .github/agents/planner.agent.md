@@ -1,5 +1,5 @@
 ---
-name: Planner
+name: planner
 description: Scope idle-game features into an implementation plan before any code is written.
 tools: ['search/codebase', 'search/usages', 'web/fetch', 'edit']
 handoffs:

@@ -1,5 +1,5 @@
 ---
-name: Tech Stack Advisor
+name: tech-stack-advisor
 description: Research and compare specific libraries, frameworks, or tooling choices (state management, big-number math, build tooling, etc.) with current maintenance/popularity data. Advisory only — does not make the final call.
 tools: ['web/fetch', 'search/codebase', 'edit']
 handoffs:

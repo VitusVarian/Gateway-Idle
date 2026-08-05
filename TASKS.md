@@ -99,43 +99,43 @@ Serialization rules:
 - [x] Confirm app boots and basic CI/local scripts run
 
 ## Milestone 1: Bare core loop
-- [ ] Implement one resource and one generator loop in memory
-- [ ] Add a manual increment action to verify state changes
-- [ ] Render minimal UI to display changing values
-- [ ] Keep milestone in-memory only (no persistence yet)
+- [x] Implement one resource and one generator loop in memory
+- [x] Add a manual increment action to verify state changes
+- [x] Render minimal UI to display changing values
+- [x] Keep milestone in-memory only (no persistence yet)
 
 ## Milestone 2: Tick loop and scaling
-- [ ] Add deterministic tick/passive generation loop
-- [ ] Add baseline cost scaling for upgrades/progression
-- [ ] Wire stage progression basics and basic combat/state transitions
-- [ ] Confirm deterministic behavior under repeated ticks
+- [x] Add deterministic tick/passive generation loop
+- [x] Add baseline cost scaling for upgrades/progression
+- [x] Wire stage progression basics and basic combat/state transitions
+- [x] Confirm deterministic behavior under repeated ticks
 
 ## Milestone 3: Save/load and offline-resume behavior
-- [ ] Implement local save/load using SaveSchemaV1 and idb-keyval
-- [ ] Add schema validation + migration entrypoint for save loading
-- [ ] Implement export/import with checksum validation
-- [ ] Implement resume behavior based on elapsed time policy (no offline simulation dependency)
-- [ ] Add corruption handling and latest-valid fallback path
+- [x] Implement local save/load using SaveSchemaV1 and idb-keyval
+- [x] Add schema validation + migration entrypoint for save loading
+- [x] Implement export/import with checksum validation
+- [x] Implement resume behavior based on elapsed time policy (no offline simulation dependency)
+- [x] Add corruption handling and latest-valid fallback path
 
 ## Milestone 4: Full UI implementation
-- [ ] Build three-row shell with always-visible battle area
-- [ ] Implement Armory, Achievements, Options, and Training panels
-- [ ] Integrate dialogs, toasts, icons, and keyboard shortcuts
-- [ ] Apply responsive behavior for desktop and smaller layouts
-- [ ] Enforce player-facing label conventions (Monster Souls, Training Points)
+- [x] Build three-row shell with always-visible battle area
+- [x] Implement Armory, Achievements, Options, and Training panels
+- [x] Integrate dialogs, toasts, icons, and keyboard shortcuts
+- [x] Apply responsive behavior for desktop and smaller layouts
+- [x] Enforce player-facing label conventions (Monster Souls, Training Points)
 
 ## Milestone 5: Secondary systems from GDD
-- [ ] Implement Training reset system end-to-end
-- [ ] Implement boss gates at stages 10, 100, and 1000
-- [ ] Implement achievement catalog, unlock checks, and reward typing
-- [ ] Keep Rebirth and Gateway as locked placeholders with correct state/timer scaffolding
+- [x] Implement Training reset system end-to-end
+- [x] Implement boss gates at stages 10, 100, and 1000
+- [x] Implement achievement catalog, unlock checks, and reward typing
+- [x] Keep Rebirth and Gateway as locked placeholders with correct state/timer scaffolding
 
 ## Milestone 6: Polish and hardening
-- [ ] Finalize large-number formatting consistency and readability
-- [ ] Run accessibility pass (focus, keyboard flow, ARIA feedback, contrast)
-- [ ] Run performance pass for high-frequency updates and selector/render isolation
-- [ ] Expand regression coverage in Vitest + Playwright
-- [ ] Resolve edge cases for long-session stability and save safety
+- [x] Finalize large-number formatting consistency and readability
+- [x] Run accessibility pass (focus, keyboard flow, ARIA feedback, contrast)
+- [x] Run performance pass for high-frequency updates and selector/render isolation
+- [x] Expand regression coverage in Vitest + Playwright
+- [x] Resolve edge cases for long-session stability and save safety
 
 ## Open decisions to flag
 
@@ -145,14 +145,14 @@ Serialization rules:
 
 ## Per-milestone handoff plan
 
-- Milestone 0 owner: React UI Builder.
-- Milestone 1 owner: React UI Builder.
-- Milestone 2 owner: Economy Designer (handoff to React UI Builder for UI wiring).
-- Milestone 3 owner: Save System Engineer.
-- Milestone 4 owner: React UI Builder.
-- Milestone 5 owner: Economy Designer for system math/logic + React UI Builder for presentation, one subsystem at a time.
-- Milestone 6 owner: React UI Builder for UX polish + Idle-Loop Performance for efficiency sign-off.
-- QA Tester: runs throughout all milestones, validating each milestone as it lands.
+- Milestone 0 owner: ui-builder.
+- Milestone 1 owner: ui-builder.
+- Milestone 2 owner: economy-designer (handoff to ui-builder for UI wiring).
+- Milestone 3 owner: save-system-engineer.
+- Milestone 4 owner: ui-builder.
+- Milestone 5 owner: economy-designer for system math/logic + ui-builder for presentation, one subsystem at a time.
+- Milestone 6 owner: ui-builder for UX polish + idle-loop-performance for efficiency sign-off.
+- qa-tester: runs throughout all milestones, validating each milestone as it lands.
 
 ## Progress tracking convention
 
